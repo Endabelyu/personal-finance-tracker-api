@@ -32,17 +32,6 @@ vi.mock('@server/lib/auth-middleware', () => ({
     await next();
   }) as MiddlewareHandler,
 }));
-vi.mock('@server/lib/auth-middleware', () => ({
-  requireAuth: (async (c, next) => {
-    const mockUser = { id: 'user-123', email: 'test@example.com' };
-    // @ts-ignore - add getVar method for compatibility
-    c.getVar = (key: string) => {
-      if (key === 'user') return mockUser;
-      return undefined;
-    };
-    await next();
-  }) as MiddlewareHandler,
-}));
 
 describe('Transactions API', () => {
   const mockTransaction = {

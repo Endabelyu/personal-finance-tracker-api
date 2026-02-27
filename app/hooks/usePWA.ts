@@ -1,3 +1,6 @@
+// TypeScript type for notification permission
+type NotificationPermission = 'default' | 'denied' | 'granted';
+
 /**
  * usePWA Hook
  * Manages PWA installation state and service worker functionality
