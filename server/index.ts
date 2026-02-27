@@ -28,16 +28,14 @@ app.route('/api', apiRoutes);
 
 // React Router handler (catch-all for client-side routes)
 app.all('*', async (c) => {
-  // Build is imported dynamically to avoid issues during development/build
-  // when the build directory doesn't exist yet
-  // @ts-expect-error - Build directory only exists after build
-  const build = await import('../build/server');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const build = await import('../build/server') as any;
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handler = createRequestHandler({
-    // @ts-expect-error - Build type is unknown at compile time
     build: build.default,
     mode: process.env.NODE_ENV as 'development' | 'production',
-  });
+  } as any);
   
   return handler(c.req.raw);
 });
