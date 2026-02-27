@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router';
 import { Menu, Search, Plus, Bell, ArrowLeft } from 'lucide-react';
+import { ThemeToggle } from '@app/components/ui';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -30,17 +31,17 @@ export function Header({ onMenuClick, title }: HeaderProps) {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       // Add background when scrolled
       setIsScrolled(currentScrollY > 10);
-      
+
       // Hide on scroll down, show on scroll up
       if (currentScrollY > lastScrollY && currentScrollY > 80) {
         setIsVisible(false);
       } else {
         setIsVisible(true);
       }
-      
+
       setLastScrollY(currentScrollY);
     };
 
@@ -56,8 +57,8 @@ export function Header({ onMenuClick, title }: HeaderProps) {
           fixed top-0 left-0 right-0 z-30 lg:hidden
           transition-all duration-300 ease-out
           ${isVisible ? 'translate-y-0' : '-translate-y-full'}
-          ${isScrolled 
-            ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg shadow-sm' 
+          ${isScrolled
+            ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg shadow-sm'
             : 'bg-transparent'
           }
         `}
@@ -89,6 +90,7 @@ export function Header({ onMenuClick, title }: HeaderProps) {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-1">
+            <ThemeToggle />
             {!isSubPage && (
               <>
                 <button
@@ -113,15 +115,17 @@ export function Header({ onMenuClick, title }: HeaderProps) {
       {/* Desktop Header */}
       <header className="hidden lg:flex items-center justify-between h-16 px-8 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">{pageTitle}</h1>
-        
+
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+
           <button
             className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800 transition-colors"
             aria-label="Notifications"
           >
             <Bell className="w-5 h-5" />
           </button>
-          
+
           <Link
             to="/transactions/new"
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors shadow-sm shadow-blue-600/20"
