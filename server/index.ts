@@ -101,7 +101,7 @@ app.onError((err, c) => {
 app.notFound((c) => c.json({ error: 'Not Found' }, 404));
 
 // Start server
-const port = parseInt(process.env.PORT || '4000');
+const port = parseInt(process.env.PORT || '3005');
 console.log(`🚀 Server starting on port ${port}...`);
 console.log(`📁 CWD: ${process.cwd()}`);
 console.log(`🔧 NODE_ENV: ${process.env.NODE_ENV}`);

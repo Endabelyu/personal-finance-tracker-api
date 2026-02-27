@@ -16,11 +16,11 @@ COPY . .
 RUN npm run build
 
 # Expose the port
-EXPOSE 4000
+EXPOSE 3005
 
 # Set environment
 ENV NODE_ENV=production
-ENV PORT=4000
+ENV PORT=3005
 
 # Start the application using Hono server
 # Start the application using tsx (for TypeScript server)
