@@ -6,7 +6,8 @@ WORKDIR /app
 # Copy package files first (for better caching)
 COPY package.json package-lock.json ./
 
-# Install production dependencies only
+# Install all dependencies (needed for SSR)
+RUN npm ci --legacy-peer-deps
 RUN npm ci --omit=dev --legacy-peer-deps
 
 # Copy built application
