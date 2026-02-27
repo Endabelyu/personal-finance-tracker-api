@@ -11,8 +11,8 @@ const app = new Hono();
 // Middleware
 app.use(logger());
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://yourdomain.com']
     : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
 }));
@@ -27,14 +27,15 @@ app.route('/api', apiRoutes);
 // React Router handler (catch-all for client-side routes)
 app.all('*', async (c) => {
   // eslint-disable-next-line
-  const build = await import('../build/server') as any;
-  
+  const build = await import('../build/server').catch(() => null) as any;
+  if (!build) {
+    return c.json({ error: 'Build not found' }, 500);
+  }
   // eslint-disable-next-line
   const handler = createRequestHandler({
     build: build.default,
     mode: process.env.NODE_ENV as 'development' | 'production',
   } as any);
-  
   return handler(c.req.raw);
 });
 
