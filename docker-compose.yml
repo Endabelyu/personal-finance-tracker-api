@@ -21,20 +21,19 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+  Optional: Add PostgreSQL if you want it in Docker too
+  db:
+    image: postgres:16-alpine
+    container_name: finance-tracker-db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
 
-  # Optional: Add PostgreSQL if you want it in Docker too
-  # db:
-  #   image: postgres:16-alpine
-  #   container_name: finance-tracker-db
-  #   environment:
-  #     POSTGRES_USER: ${DB_USER}
-  #     POSTGRES_PASSWORD: ${DB_PASSWORD}
-  #     POSTGRES_DB: ${DB_NAME}
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
-  #   restart: unless-stopped
-
-# volumes:
-#   postgres_data:
+volumes:
+  postgres_data:
