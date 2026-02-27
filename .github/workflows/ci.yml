@@ -49,28 +49,6 @@ jobs:
         run: npm run type-check
 
   test:
-        run: npm ci --legacy-peer-deps
-
-      - name: Build application
-        run: npm run build
-
-      - name: Run TypeScript check
-        run: npm run type-check
-
-  test:
-        run: npm ci --legacy-peer-deps
-
-      - name: Build application
-        run: npm run build
-
-      - name: Run TypeScript check
-        run: npm run type-check
-        run: npm ci --legacy-peer-deps
-
-      - name: Run TypeScript check
-        run: npm run type-check
-
-  test:
     name: Test
     runs-on: ubuntu-latest
     services:
