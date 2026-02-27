@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": ["app/*"],
+      "@server/*": ["server/*"],
+      "@db/*": ["db/*"],
+      "@/*": ["app/*"]
+    },
+"types": ["react-router", "vitest/globals", "@testing-library/jest-dom", "vite/client"],
+  },
+  "include": ["app/**/*", "server/**/*", "db/**/*"],
+  "exclude": ["node_modules", "build"]
+}
