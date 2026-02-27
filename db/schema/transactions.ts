@@ -1,0 +1,24 @@
+import { pgTable, uuid, varchar, decimal, timestamp, text } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
+import { users } from './users';
+import { categories } from './categories';
+
+export const transactions = pgTable('transactions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').notNull().references(() => users.id),
+  type: varchar('type', { length: 10 }).notNull(), // 'income' | 'expense'
+  amount: decimal('amount', { precision: 15, scale: 2 }).notNull(),
+  categoryId: varchar('category_id').notNull().references(() => categories.id),
+  description: text('description'),
+  date: timestamp('date', { mode: 'date' }).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow(),
+});
+
+export const transactionsRelations = relations(transactions, ({ one }) => ({
+  user: one(users, { fields: [transactions.userId], references: [users.id] }),
+  category: one(categories, { fields: [transactions.categoryId], references: [categories.id] }),
+}));
+
+export type Transaction = typeof transactions.$inferSelect;
+export type NewTransaction = typeof transactions.$inferInsert;
