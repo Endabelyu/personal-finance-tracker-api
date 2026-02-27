@@ -13,11 +13,11 @@ RUN npm ci --omit=dev --legacy-peer-deps
 COPY build ./build
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 4000
 
 # Set environment
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=4000
 
 # Start the application
 CMD ["node", "build/server/index.js"]
