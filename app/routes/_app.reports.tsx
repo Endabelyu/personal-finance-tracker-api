@@ -543,7 +543,7 @@ export default function ReportsPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      content={({ active, payload }: { active?: boolean; payload?: Array<{ payload: CategoryBreakdown }> }) => {
+                      content={({ active, payload }: { active?: boolean; payload?: ReadonlyArray<{ payload: CategoryBreakdown }> }) => {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload;
                           return (
@@ -619,7 +619,7 @@ export default function ReportsPage() {
                       domain={[0, 'auto']}
                     />
                     <Tooltip
-                      content={({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) => {
+                      content={({ active, payload, label }: { active?: boolean; payload?: ReadonlyArray<{ value: number }>; label?: string | number }) => {
                         if (active && payload && payload.length) {
                           return (
                             <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-3">

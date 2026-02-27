@@ -22,7 +22,7 @@
       "@db/*": ["db/*"],
       "@/*": ["app/*"]
     },
-"types": ["react-router", "vitest/globals", "@testing-library/jest-dom", "vite/client"],
+"types": ["node", "react-router", "vitest/globals", "@testing-library/jest-dom", "vite/client"],
   },
   "include": ["app/**/*", "server/**/*", "db/**/*"],
   "exclude": ["node_modules", "build"]
