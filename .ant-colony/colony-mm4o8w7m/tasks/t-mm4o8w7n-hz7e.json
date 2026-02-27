@@ -1,0 +1,17 @@
+{
+  "id": "t-mm4o8w7n-hz7e",
+  "parentId": null,
+  "title": "Scout: explore codebase for goal",
+  "description": "Explore the codebase and identify all files, modules, and dependencies relevant to this goal:\n\nYour one and only mission is to build the Personal Finance Tracker by strictly following the instructions in `PLANNING.md` and `TASKS.md` located in the current directory (`C:\\project\\pi\\personal-finance-tracker`).\n\n### Primary Directives:\n1.  **Read First:** Before any other action, you MUST read `PLANNING.md` and `TASKS.md` in their entirety. These files are your single source of truth.\n2.  **Do Not Deviate:** The tech stack, architecture, and features are explicitly defined in the planning documents. Do not improvise or change the plan.\n3.  **Follow Task Order:** Execute the phases outlined in `TASKS.md` sequentially, starting with Phase 0.\n4.  **Prioritize `write` Tool:** The `bash` environment may be unreliable. Prioritize using the `write` tool to create files directly, using the content and structure specified in the planning documents. Avoid shell commands like `npm install` or `vite` if possible, and instead focus on generating the source code files.\n5.  **Assign Workers Logically:** Structure the work around the phases in `TASKS.md`. For example:\n    *   **Worker 1 (Scaffolding):** Execute Phase 0.\n    *   **Worker 2 (DB & Auth):** Execute Phase 1 and 2.\n    *   **Worker 3 (API & UI Base):** Execute Phase 3 and 4.\n    *   **Worker 4 (Pages):** Execute Phase 5.\n6.  **Soldier's Duty:** The final review by the soldier ant must be a strict audit. Verify that the generated code perfectly matches the architecture in `PLANNING.md` and that all MVP tasks in `TASKS.md` are completed.\n\nYour success is measured by your faithful execution of the existing plan.\n\n\nBe thorough. The colony depends on your intelligence.",
+  "caste": "scout",
+  "status": "failed",
+  "priority": 1,
+  "files": [],
+  "claimedBy": "queen",
+  "result": "",
+  "error": "Error: No API key found for google.\n\nUse /login or set an API key environment variable. See C:\\Users\\endab\\AppData\\Roaming\\npm\\node_modules\\@mariozechner\\pi-coding-agent\\docs\\providers.md",
+  "spawnedTasks": [],
+  "createdAt": 1772183411987,
+  "startedAt": 1772183411995,
+  "finishedAt": 1772183412006
+}

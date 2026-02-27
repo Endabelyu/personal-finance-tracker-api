@@ -1,6 +1,5 @@
 # Production Dockerfile for Personal Finance Tracker
-# Build stage
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -16,20 +15,6 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Production stage
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-
-# Copy package files
-COPY package.json package-lock.json ./
-
-# Install ALL dependencies (needed for SSR with React 19)
-RUN npm ci --legacy-peer-deps
-
-# Copy built application from builder
-COPY --from=builder /app/build ./build
-
 # Expose the port
 EXPOSE 4000
 
@@ -37,5 +22,5 @@ EXPOSE 4000
 ENV NODE_ENV=production
 ENV PORT=4000
 
-# Start the application
-CMD ["node", "build/server/index.js"]
+# Start the application using Hono server
+CMD ["node", "server/index.js"]
