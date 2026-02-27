@@ -1,0 +1,17 @@
+import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
+
+export const {{name_pluralSnake}} = pgTable('{{name_pluralSnake}}', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow(),
+});
+
+export const {{name_camel}}Relations = relations({{name_pluralSnake}}, ({ one, many }) => ({
+  // Add relations here
+}));
+
+export type {{name_pascal}} = typeof {{name_pluralSnake}}.$inferSelect;
+export type New{{name_pascal}} = typeof {{name_pluralSnake}}.$inferInsert;

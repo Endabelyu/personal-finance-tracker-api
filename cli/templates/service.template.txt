@@ -1,0 +1,60 @@
+import { db } from '@server/lib/db';
+import { {{name_pluralSnake}} } from '@db/schema/{{name_plural}}';
+import { eq } from 'drizzle-orm';
+
+export interface Create{{name_pascal}}Input {
+  name: string;
+  description?: string;
+}
+
+export interface Update{{name_pascal}}Input {
+  name?: string;
+  description?: string;
+}
+
+export class {{name_pascal}}Service {
+  async findAll() {
+    return db.query.{{name_pluralSnake}}.findMany({
+      orderBy: ({{name_pluralSnake}}, { desc }) => [desc({{name_pluralSnake}}.createdAt)],
+    });
+  }
+
+  async findById(id: string) {
+    return db.query.{{name_pluralSnake}}.findFirst({
+      where: eq({{name_pluralSnake}}.id, id),
+    });
+  }
+
+  async create(data: Create{{name_pascal}}Input) {
+    const [result] = await db
+      .insert({{name_pluralSnake}})
+      .values({
+        id: crypto.randomUUID(),
+        ...data,
+      })
+      .returning();
+    return result;
+  }
+
+  async update(id: string, data: Update{{name_pascal}}Input) {
+    const [result] = await db
+      .update({{name_pluralSnake}})
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq({{name_pluralSnake}}.id, id))
+      .returning();
+    return result;
+  }
+
+  async delete(id: string) {
+    const [result] = await db
+      .delete({{name_pluralSnake}})
+      .where(eq({{name_pluralSnake}}.id, id))
+      .returning();
+    return result;
+  }
+}
+
+export const {{name_camel}}Service = new {{name_pascal}}Service();

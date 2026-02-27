@@ -1,0 +1,70 @@
+import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
+import { {{name_camel}}Service } from '@server/services/{{name_plural}}';
+import { requireAuth } from '@server/middleware/auth';
+
+const app = new Hono();
+
+const createSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+});
+
+const updateSchema = z.object({
+  name: z.string().min(1).optional(),
+  description: z.string().optional(),
+});
+
+// GET /api/{{name_plural}} - List all {{name_plural}}
+app.get('/', async (c) => {
+  const items = await {{name_camel}}Service.findAll();
+  return c.json({ items });
+});
+
+// GET /api/{{name_plural}}/:id - Get single {{name}}
+app.get('/:id', async (c) => {
+  const id = c.req.param('id');
+  const item = await {{name_camel}}Service.findById(id);
+  
+  if (!item) {
+    return c.json({ error: '{{name_pascal}} not found' }, 404);
+  }
+  
+  return c.json(item);
+});
+
+// POST /api/{{name_plural}} - Create {{name}}
+app.post('/', requireAuth, zValidator('json', createSchema), async (c) => {
+  const data = c.req.valid('json');
+  const item = await {{name_camel}}Service.create(data);
+  return c.json(item, 201);
+});
+
+// PATCH /api/{{name_plural}}/:id - Update {{name}}
+app.patch('/:id', requireAuth, zValidator('json', updateSchema), async (c) => {
+  const id = c.req.param('id');
+  const data = c.req.valid('json');
+  const item = await {{name_camel}}Service.update(id, data);
+  
+  if (!item) {
+    return c.json({ error: '{{name_pascal}} not found' }, 404);
+  }
+  
+  return c.json(item);
+});
+
+// DELETE /api/{{name_plural}}/:id - Delete {{name}}
+app.delete('/:id', requireAuth, async (c) => {
+  const id = c.req.param('id');
+  const item = await {{name_camel}}Service.delete(id);
+  
+  if (!item) {
+    return c.json({ error: '{{name_pascal}} not found' }, 404);
+  }
+  
+  return c.json({ success: true });
+});
+
+export default app;
+export type {{name_pascal}}App = typeof app;
