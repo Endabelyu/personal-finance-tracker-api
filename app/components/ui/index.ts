@@ -30,3 +30,29 @@ export {
   WalkthroughCompletionBadge,
 } from './Walkthrough';
 export type { WalkthroughStep, WalkthroughTriggerProps } from './Walkthrough';
+
+// Mobile-optimized components
+export { BottomSheet, useBottomSheet } from './BottomSheet';
+export {
+  SwipeableItem,
+  SwipeToDelete,
+  SwipeToEditDelete,
+} from './SwipeableItem';
+export { PullToRefresh, usePullToRefresh } from './PullToRefresh';
+export { FAB, AddFAB, TransactionSpeedDial } from './FAB';
+export {
+  MobileCard,
+  ListItemCard,
+  SummaryCard,
+  TransactionCard,
+  SectionHeader,
+  EmptyStateCard,
+} from './MobileCard';
+export {
+  MobileInput,
+  MobileTextArea,
+  MobileSelect,
+  MobileFormSection,
+  MobileFormActions,
+} from './MobileInput';
+export { MobileDatePicker, NativeDatePicker } from './MobileDatePicker';
