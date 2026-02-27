@@ -19,19 +19,17 @@ app.use(cors({
 app.use(secureHeaders());
 
 // Health check endpoint
-app.get('/health', (c) => {
-  return c.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 // API routes
 app.route('/api', apiRoutes);
 
 // React Router handler (catch-all for client-side routes)
 app.all('*', async (c) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   const build = await import('../build/server') as any;
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   const handler = createRequestHandler({
     build: build.default,
     mode: process.env.NODE_ENV as 'development' | 'production',
@@ -43,23 +41,14 @@ app.all('*', async (c) => {
 // Error handler
 app.onError((err, c) => {
   console.error('Server Error:', err);
-  return c.json(
-    { error: 'Internal Server Error', message: err.message },
-    500
-  );
+  return c.json({ error: 'Internal Server Error', message: err.message }, 500);
 });
 
 // Not found handler
-app.notFound((c) => {
-  return c.json({ error: 'Not Found' }, 404);
-});
+app.notFound((c) => c.json({ error: 'Not Found' }, 404));
 
 // Start server
 const port = parseInt(process.env.PORT || '3000');
-
 console.log(`🚀 Server starting on port ${port}...`);
 
-export default {
-  port,
-  fetch: app.fetch,
-};
+export default { port, fetch: app.fetch };
