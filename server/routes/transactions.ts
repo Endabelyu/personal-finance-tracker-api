@@ -1,0 +1,218 @@
+/// <reference path="../types/hono.d.ts" />
+import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
+import { eq, and, like, desc, sql, SQL } from 'drizzle-orm';
+import { db } from '@server/lib/db';
+import { transactions, categories } from '@db/schema';
+import { requireAuth } from '@server/lib/auth-middleware';
+
+const app = new Hono();
+
+// List schema for query params
+const listQuerySchema = z.object({
+  month: z.string().regex(/^\d{4}-\d{2}$/).optional(),
+  type: z.enum(['income', 'expense']).optional(),
+  category: z.string().optional(),
+  search: z.string().optional(),
+  page: z.string().transform(Number).default('1'),
+  limit: z.string().transform(Number).default('20'),
+});
+
+// Create transaction schema
+const createSchema = z.object({
+  type: z.enum(['income', 'expense']),
+  amount: z.union([z.string(), z.number()]).transform((v) => {
+    const num = typeof v === 'string' ? parseFloat(v) : v;
+    return num.toFixed(2);
+  }),
+  categoryId: z.string(),
+  description: z.string().optional(),
+  date: z.string().date(),
+});
+
+// Update transaction schema
+const updateSchema = z.object({
+  type: z.enum(['income', 'expense']).optional(),
+  amount: z.union([z.string(), z.number()]).optional().transform((v) => {
+    if (v === undefined) return undefined;
+    const num = typeof v === 'string' ? parseFloat(v) : v;
+    return num.toFixed(2);
+  }),
+  categoryId: z.string().optional(),
+  description: z.string().optional(),
+  date: z.string().date().optional(),
+});
+
+// Apply auth middleware to all routes
+app.use('*', requireAuth);
+
+// GET /api/transactions - List with filters
+app.get('/', zValidator('query', listQuerySchema), async (c) => {
+  const user = c.get('user') as { id: string };
+  const query = c.req.valid('query');
+  const page = query.page;
+  const limit = query.limit;
+  const offset = (page - 1) * limit;
+
+  // Build where conditions
+  const conditions: (SQL | undefined)[] = [eq(transactions.userId, user.id)];
+
+  if (query.month) {
+    const startDate = `${query.month}-01`;
+    const endDate = `${query.month}-31`;
+    conditions.push(
+      sql`${transactions.date} >= ${startDate} AND ${transactions.date} <= ${endDate}`
+    );
+  }
+
+  if (query.type) {
+    conditions.push(eq(transactions.type, query.type));
+  }
+
+  if (query.category) {
+    conditions.push(eq(transactions.categoryId, query.category));
+  }
+
+  if (query.search) {
+    conditions.push(
+      like(transactions.description, `%${query.search}%`)
+    );
+  }
+
+  // Execute query
+  const items = await db.query.transactions.findMany({
+    where: and(...conditions),
+    orderBy: [desc(transactions.date), desc(transactions.createdAt)],
+    limit,
+    offset,
+    with: {
+      category: true,
+    },
+  });
+
+  // Get total count
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(transactions)
+    .where(and(...conditions));
+
+  const total = countResult[0]?.count ?? 0;
+
+  return c.json({
+    items,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  });
+});
+
+// POST /api/transactions - Create transaction
+app.post('/', zValidator('json', createSchema), async (c) => {
+  const user = c.get('user') as { id: string };
+  const data = c.req.valid('json');
+
+  // Verify category exists
+  const category = await db.query.categories.findFirst({
+    where: eq(categories.id, data.categoryId),
+  });
+
+  if (!category) {
+    return c.json({ error: 'Category not found' }, 400);
+  }
+
+  // Create transaction
+  const result = await db
+    .insert(transactions)
+    .values({
+      type: data.type,
+      amount: data.amount,
+      categoryId: data.categoryId,
+      description: data.description,
+      date: new Date(data.date),
+      userId: user.id,
+    })
+    .returning();
+
+  return c.json(result[0], 201);
+});
+
+// PUT /api/transactions/:id - Update transaction (owner check)
+app.put('/:id', zValidator('json', updateSchema), async (c) => {
+  const user = c.get('user') as { id: string };
+  const id = c.req.param('id');
+  const data = c.req.valid('json');
+
+  // Check ownership
+  const existing = await db.query.transactions.findFirst({
+    where: eq(transactions.id, id),
+  });
+
+  if (!existing) {
+    return c.json({ error: 'Transaction not found' }, 404);
+  }
+
+  if (existing.userId !== user.id) {
+    return c.json({ error: 'Forbidden' }, 403);
+  }
+
+  // Verify new category if provided
+  if (data.categoryId) {
+    const category = await db.query.categories.findFirst({
+      where: eq(categories.id, data.categoryId),
+    });
+
+    if (!category) {
+      return c.json({ error: 'Category not found' }, 400);
+    }
+  }
+
+  // Update transaction - build update object explicitly to ensure date is converted
+  const updateData: Record<string, unknown> = {
+    updatedAt: new Date(),
+  };
+
+  if (data.type) updateData.type = data.type;
+  if (data.amount) updateData.amount = data.amount;
+  if (data.categoryId) updateData.categoryId = data.categoryId;
+  if (data.description !== undefined) updateData.description = data.description;
+  if (data.date) updateData.date = new Date(data.date);
+
+  const result = await db
+    .update(transactions)
+    .set(updateData)
+    .where(eq(transactions.id, id))
+    .returning();
+
+  return c.json(result[0]);
+});
+
+// DELETE /api/transactions/:id - Delete transaction (owner check)
+app.delete('/:id', async (c) => {
+  const user = c.get('user') as { id: string };
+  const id = c.req.param('id');
+
+  // Check ownership
+  const existing = await db.query.transactions.findFirst({
+    where: eq(transactions.id, id),
+  });
+
+  if (!existing) {
+    return c.json({ error: 'Transaction not found' }, 404);
+  }
+
+  if (existing.userId !== user.id) {
+    return c.json({ error: 'Forbidden' }, 403);
+  }
+
+  // Delete transaction
+  await db.delete(transactions).where(eq(transactions.id, id));
+
+  return c.json({ success: true });
+});
+
+export default app;
+export type TransactionsApp = typeof app;
