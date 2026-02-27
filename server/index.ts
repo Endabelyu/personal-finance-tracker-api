@@ -26,8 +26,10 @@ app.route('/api', apiRoutes);
 
 // React Router handler (catch-all for client-side routes)
 app.all('*', async (c) => {
+  // Use Function constructor to avoid TypeScript module resolution
+  const dynamicImport = new Function('path', 'return import(path)');
   // eslint-disable-next-line
-  const build = await import('../build/server').catch(() => null) as any;
+  const build = await dynamicImport('../build/server').catch(() => null) as any;
   if (!build) {
     return c.json({ error: 'Build not found' }, 500);
   }
