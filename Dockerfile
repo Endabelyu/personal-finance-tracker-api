@@ -1,19 +1,36 @@
 # Production Dockerfile for Personal Finance Tracker
-FROM node:20-alpine
+# Build stage
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files first (for better caching)
+# Copy package files
 COPY package.json package-lock.json ./
 
-# Install all dependencies (needed for SSR)
+# Install all dependencies
 RUN npm ci --legacy-peer-deps
-RUN npm ci --omit=dev --legacy-peer-deps
 
-# Copy built application
-COPY build ./build
+# Copy source files
+COPY . .
 
-# Expose the port the app runs on
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install ALL dependencies (needed for SSR with React 19)
+RUN npm ci --legacy-peer-deps
+
+# Copy built application from builder
+COPY --from=builder /app/build ./build
+
+# Expose the port
 EXPOSE 4000
 
 # Set environment
