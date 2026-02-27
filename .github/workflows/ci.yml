@@ -110,35 +110,6 @@ jobs:
       - name: Build application
         run: npm run build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build
-          path: build/
-          retention-days: 1
-
-  # Optional: Deploy preview for pull requests
-  deploy-preview:
-    name: Deploy Preview
-    runs-on: ubuntu-latest
-    needs: [lint, type-check, test, build]
-    if: github.event_name == 'pull_request'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-
-      - name: Build application
-        run: npm run build
-
   # Production deployment via SCP to VPS (Docker)
   deploy-production:
     name: Deploy to VPS via SCP + Docker
@@ -150,32 +121,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build
-          path: build/
-
-      - name: Copy build files to VPS
+      - name: Copy source files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || '22' }}
-          source: "build/*"
-          target: ${{ secrets.VPS_TARGET_DIR }}/build/
-          strip_components: 1
-          overwrite: true
-
-      - name: Copy config files to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || '22' }}
-          source: "package.json,package-lock.json,docker-compose.yml,Dockerfile"
+          source: "app/,db/,server/,package.json,package-lock.json,docker-compose.yml,Dockerfile,tsconfig.json,vite.config.ts,react-router.config.ts,tailwind.config.js,postcss.config.mjs,drizzle.config.ts"
           target: ${{ secrets.VPS_TARGET_DIR }}/
           overwrite: true
 
@@ -188,5 +141,6 @@ jobs:
           port: ${{ secrets.VPS_PORT || '22' }}
           script: |
             cd ${{ secrets.VPS_TARGET_DIR }}
+            docker compose down
             docker compose up --build -d
             docker image prune -f
