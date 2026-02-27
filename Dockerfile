@@ -23,4 +23,5 @@ ENV NODE_ENV=production
 ENV PORT=4000
 
 # Start the application using Hono server
-CMD ["node", "server/index.js"]
+# Start the application using tsx (for TypeScript server)
+CMD ["npx", "tsx", "server/index.ts"]
