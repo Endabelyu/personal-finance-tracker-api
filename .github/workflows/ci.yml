@@ -14,39 +14,25 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-
-      - name: Run ESLint
-        run: npm run lint
+      - run: npm ci --legacy-peer-deps
+      - run: npm run lint
 
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-
-      - name: Run TypeScript check
-        run: npm run type-check
+      - run: npm ci --legacy-peer-deps
+      - run: npm run type-check
 
   test:
     name: Test
@@ -66,23 +52,16 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-
+      - run: npm ci --legacy-peer-deps
       - name: Setup database
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/financetracker_test
         run: npm run db:push
-
       - name: Run tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/financetracker_test
@@ -91,15 +70,16 @@ jobs:
           NODE_ENV: test
         run: npm test
 
-  build:
-    name: Build
+  deploy-production:
+    name: Deploy to VPS
     runs-on: ubuntu-latest
+    needs: [lint, type-check, test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -110,29 +90,18 @@ jobs:
       - name: Build application
         run: npm run build
 
-  # Production deployment via SCP to VPS (Docker)
-  deploy-production:
-    name: Deploy to VPS via SCP + Docker
-    runs-on: ubuntu-latest
-    needs: [lint, type-check, test, build]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: production
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Copy source files to VPS
+      - name: Copy files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || '22' }}
-          source: "app/,db/,server/,package.json,package-lock.json,docker-compose.yml,Dockerfile,tsconfig.json,vite.config.ts,react-router.config.ts,tailwind.config.js,postcss.config.mjs,drizzle.config.ts"
+          source: "build/,package.json,package-lock.json,docker-compose.yml,Dockerfile"
           target: ${{ secrets.VPS_TARGET_DIR }}/
           overwrite: true
 
-      - name: Run Docker Compose on VPS
+      - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -141,6 +110,7 @@ jobs:
           port: ${{ secrets.VPS_PORT || '22' }}
           script: |
             cd ${{ secrets.VPS_TARGET_DIR }}
-            docker compose down
-            docker compose up --build -d
+            docker compose pull
+            docker compose up -d --build
+            docker compose exec -T app npm run db:push
             docker image prune -f
