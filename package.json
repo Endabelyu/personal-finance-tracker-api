@@ -18,7 +18,12 @@
     "test": "vitest run",
     "test:unit": "vitest run --exclude '**/*.integration.test.ts'",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:perf": "node scripts/performance-test.js",
+    "test:security": "node scripts/security-scan.js",
+    "test:memory": "node scripts/memory-leak-test.js",
+    "test:api": "node scripts/api-test.js",
+    "test:all": "node scripts/test-all.js"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",
@@ -53,6 +58,8 @@
     "@types/recharts": "^1.8.29",
     "@vitejs/plugin-react": "^5.1.4",
     "@vitest/coverage-v8": "^4.0.18",
+    "autocannon": "^8.0.0",
+    "clinic": "^13.0.0",
     "drizzle-kit": "^0.31.4",
     "eslint": "^9.0.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
@@ -60,6 +67,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^17.3.0",
     "jsdom": "^28.1.0",
+    "loadtest": "^8.2.1",
     "typescript": "^5.4.0",
     "typescript-eslint": "^8.56.1",
     "vite-plugin-pwa": "^1.2.0",
