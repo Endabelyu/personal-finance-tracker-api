@@ -78,7 +78,6 @@ app.all('*', async (c) => {
       return c.json({ error: 'Build not found' }, 500);
     }
     
-    // eslint-disable-next-line
     const handler = createRequestHandler({
       build: build.default,
       mode: process.env.NODE_ENV as 'development' | 'production',
