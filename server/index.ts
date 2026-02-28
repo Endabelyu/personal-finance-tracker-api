@@ -106,12 +106,25 @@ console.log(`🚀 Server starting on port ${port}...`);
 console.log(`📁 CWD: ${process.cwd()}`);
 console.log(`🔧 NODE_ENV: ${process.env.NODE_ENV}`);
 
-serve({
+const server = serve({
   fetch: app.fetch,
   port,
 }, (info: { port: number }) => {
   console.log(`✅ Server running on http://localhost:${info.port}`);
 });
+
+// Explicitly handle termination signals to ensure graceful shutdown
+// and to keep the event loop alive.
+const gracefulShutdown = () => {
+  console.log('Shutting down server gracefully...');
+  server.close(() => {
+    console.log('Server closed.');
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
 
 process.on('uncaughtException', (err) => {
   console.error('🔥 Uncaught Exception:', err);
