@@ -13,7 +13,7 @@ const app = new Hono();
 app.use(logger());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
-    ? ['https://yourdomain.com']
+    ? [process.env.BETTER_AUTH_URL || 'https://personal-finance-tracker.endabelyu.com']
     : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
 }));
@@ -66,10 +66,10 @@ app.use('/sw.js', async (c) => {
 // React Router handler (catch-all for SSR)
 app.all('*', async (c) => {
   try {
-    // Use Function constructor to avoid TypeScript module resolution
-    const dynamicImport = new Function('path', 'return import(path)');
+    // Dynamic import of the React Router SSR build output
+    // Path is relative to CWD (/app in Docker)
     // eslint-disable-next-line
-    const build = await dynamicImport('../build/server').catch((e: Error) => {
+    const build = await import(/* @vite-ignore */ '../build/server/index.js').catch((e: Error) => {
       console.error('Failed to load build:', e);
       return null;
     }) as any;

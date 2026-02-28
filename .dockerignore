@@ -1,0 +1,16 @@
+node_modules
+.git
+.gitignore
+build
+*.md
+.env
+.env.*
+.vscode
+.github
+tests
+*.test.ts
+*.test.tsx
+*.spec.ts
+coverage
+cli
+scripts
