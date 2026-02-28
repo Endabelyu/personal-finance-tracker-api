@@ -7,8 +7,9 @@
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
-    "build": "react-router build",
-    "start": "react-router-serve ./build/server/index.js",
+    "build": "react-router build && npm run build:server",
+    "build:server": "esbuild server/index.ts --bundle --platform=node --format=esm --packages=external --outdir=build/custom-server",
+    "start": "node ./build/custom-server/index.js",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
     "db:generate": "drizzle-kit generate",

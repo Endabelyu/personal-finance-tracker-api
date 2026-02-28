@@ -20,5 +20,5 @@ EXPOSE 3005
 ENV NODE_ENV=production
 ENV PORT=3005
 
-# Start the Hono custom server (which imports build/server for SSR)
-CMD ["npx", "tsx", "server/index.ts"]
+# Start the Hono custom server
+CMD ["npm", "start"]
