@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { serve } from '@hono/node-server';
 import { logger } from 'hono/logger';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
@@ -105,4 +106,9 @@ console.log(`🚀 Server starting on port ${port}...`);
 console.log(`📁 CWD: ${process.cwd()}`);
 console.log(`🔧 NODE_ENV: ${process.env.NODE_ENV}`);
 
-export default { port, fetch: app.fetch };
+serve({
+  fetch: app.fetch,
+  port,
+}, (info: { port: number }) => {
+  console.log(`✅ Server running on http://localhost:${info.port}`);
+});
