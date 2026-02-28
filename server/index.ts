@@ -67,9 +67,12 @@ app.use('/sw.js', async (c) => {
 app.all('*', async (c) => {
   try {
     // Dynamic import of the React Router SSR build output
-    // Path is relative to CWD (/app in Docker)
+    // Path is relative to CWD (/app in Docker).
+    // Stored in a variable so TypeScript cannot statically resolve it (avoids TS2307).
     // eslint-disable-next-line
-    const build = await import(/* @vite-ignore */ '../build/server/index.js').catch((e: Error) => {
+    const buildPath = '../build/server/index.js';
+    // eslint-disable-next-line
+    const build = await import(/* @vite-ignore */ buildPath).catch((e: Error) => {
       console.error('Failed to load build:', e);
       return null;
     }) as any;
