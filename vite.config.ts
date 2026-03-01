@@ -3,9 +3,6 @@ import { reactRouter } from '@react-router/dev/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
-import { reactRouter } from '@react-router/dev/vite';
-import tailwindcss from '@tailwindcss/vite';
-import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [reactRouter(), tailwindcss(), VitePWA({
@@ -17,8 +14,8 @@ export default defineConfig({
     includeAssets: ['favicon.ico', 'robots.txt', 'icons/*.svg'],
     manifest: false, // Using our own manifest.json
     devOptions: {
-      enabled: true,
-      type: 'module'
+      // Disable SW in dev to avoid caching issues during development
+      enabled: false,
     }
   })],
   resolve: {
@@ -30,6 +27,13 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Proxy /api/* to the Hono API server running on port 3000
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     target: 'esnext',
