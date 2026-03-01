@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useSearchParams, useNavigate } from 'react-router';
 import { authClient } from '@app/lib/auth-client';
 import { Button } from '@app/components/ui/Button';
 import { Input } from '@app/components/ui/Input';
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   
   const registered = searchParams.get('registered') === 'true';
   
@@ -28,6 +29,8 @@ export default function LoginPage() {
       
       if (result.error) {
         setError(result.error.message || 'Invalid email or password');
+      } else {
+        navigate('/');
       }
     } catch (err) {
       setError('An unexpected error occurred');
