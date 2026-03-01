@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from 'react-router';
 import { useLoaderData, useSearchParams, useNavigation, useFetcher } from 'react-router';
 import { requireSession } from '@app/lib/auth.server';
-import { api } from '@app/lib/api-client';
 import { TransactionItem } from '@app/components/finance/TransactionItem';
 import { TransactionForm } from '@app/components/finance/TransactionForm';
 import { Modal } from '@app/components/ui/Modal';
@@ -12,6 +11,8 @@ import { Input } from '@app/components/ui/Input';
 import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
 import { Plus, Search, Filter, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import type { Transaction, Category } from '@db/schema';
+import { listCategories } from '@server/lib/services/categories';
+import { listTransactions, deleteTransaction } from '@server/lib/services/transactions';
 
 export const meta: MetaFunction = () => {
   return [
@@ -34,60 +35,50 @@ export async function loader({ request }: LoaderFunctionArgs): Promise<Response>
   const session = await requireSession(request);
   const url = new URL(request.url);
   const searchParams = url.searchParams;
-  
-  const page = searchParams.get('page') || '1';
-  const type = searchParams.get('type') || '';
-  const category = searchParams.get('category') || '';
-  const month = searchParams.get('month') || '';
-  const search = searchParams.get('search') || '';
-  
+
+  const page = Number(searchParams.get('page') || '1');
+  const type = searchParams.get('type') as 'income' | 'expense' | undefined || undefined;
+  const category = searchParams.get('category') || undefined;
+  const month = searchParams.get('month') || undefined;
+  const search = searchParams.get('search') || undefined;
+
   try {
-    const [transactionsRes, categoriesRes] = await Promise.all([
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/transactions?page=${page}&type=${type}&category=${category}&month=${month}&search=${search}`, {
-        headers: { Cookie: request.headers.get('Cookie') || '' }
-      }),
-      api.categories.$get(undefined, {
-        headers: { Cookie: request.headers.get('Cookie') || '' }
-      })
+    const [transactionsData, categoriesData] = await Promise.all([
+      listTransactions({ userId: session.userId, page, type, category, month, search }),
+      listCategories(),
     ]);
-    
-    const transactionsData = await transactionsRes.json().catch(() => ({ items: [], pagination: { page: 1, totalPages: 1, total: 0 } }));
-    const categories = await categoriesRes.json().catch(() => []);
-    
+
     return Response.json({
-      transactions: transactionsData.items || [],
-      categories: categories || [],
-      pagination: transactionsData.pagination || { page: 1, totalPages: 1, total: 0 }
+      transactions: transactionsData.items,
+      categories: categoriesData,
+      pagination: transactionsData.pagination,
     });
   } catch (error) {
     console.error('Transactions loader error:', error);
     return Response.json({
       transactions: [],
       categories: [],
-      pagination: { page: 1, totalPages: 1, total: 0 }
+      pagination: { page: 1, totalPages: 1, total: 0, limit: 20 },
     }, { status: 500 });
   }
 }
 
 export async function action({ request }: ActionFunctionArgs): Promise<Response> {
+  const session = await requireSession(request);
   const formData = await request.formData();
   const intent = formData.get('intent') as string;
-  const cookie = request.headers.get('Cookie') || '';
-  
+
   if (intent === 'delete') {
     const id = formData.get('id') as string;
     try {
-      const res = await fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/transactions/${id}`, {
-        method: 'DELETE',
-        headers: { Cookie: cookie }
-      });
-      if (!res.ok) throw new Error('Failed to delete');
+      await deleteTransaction(id, session.userId);
       return Response.json({ success: true });
     } catch (error) {
-      return Response.json({ error: 'Failed to delete transaction' }, { status: 500 });
+      const err = error as { status?: number; message?: string };
+      return Response.json({ error: err.message || 'Failed to delete transaction' }, { status: err.status || 500 });
     }
   }
-  
+
   return Response.json({ error: 'Unknown intent' }, { status: 400 });
 }
 

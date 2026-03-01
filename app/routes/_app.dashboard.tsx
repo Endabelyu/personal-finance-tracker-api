@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import { useLoaderData, useNavigation, Link } from 'react-router';
 import { requireSession } from '@app/lib/auth.server';
-import { api } from '@app/lib/api-client';
 import { StatCard } from '@app/components/finance/StatCard';
 import { Button } from '@app/components/ui/Button';
 import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
@@ -32,6 +31,9 @@ import {
   ChartSkeleton,
   TransactionItemSkeleton,
 } from '@app/components/ui';
+import { listCategories } from '@server/lib/services/categories';
+import { listTransactions } from '@server/lib/services/transactions';
+import { getFinancialSummary, getMonthlyTrend } from '@server/lib/services/reports';
 
 // ============================================================================
 // META
@@ -77,42 +79,22 @@ interface LoaderData {
 export async function loader({ request }: LoaderFunctionArgs): Promise<Response> {
   const session = await requireSession(request);
 
-  const cookie = request.headers.get('Cookie') || '';
-
-  // Get current month for summary
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
   try {
-    // Fetch all data in parallel
-    const [summaryRes, monthlyRes, transactionsRes, categoriesRes] = await Promise.all([
-      // Summary stats for current month
-      fetch(`/api/reports/summary?month=${currentMonth}`, {
-        headers: { Cookie: cookie },
-      }),
-      // Monthly trend data (last 6 months)
-      fetch('/api/reports/monthly?months=6', {
-        headers: { Cookie: cookie },
-      }),
-      // Recent 5 transactions
-      fetch('/api/transactions?limit=5&page=1', {
-        headers: { Cookie: cookie },
-      }),
-      // Categories for display
-      api.categories.$get(undefined, { headers: { Cookie: cookie } }),
+    const [summary, monthlyData, transactionsData, categoriesData] = await Promise.all([
+      getFinancialSummary(session.userId, currentMonth),
+      getMonthlyTrend(session.userId, 6),
+      listTransactions({ userId: session.userId, limit: 5, page: 1 }),
+      listCategories(),
     ]);
 
-    // Handle errors gracefully
-    const summary = summaryRes.ok ? await summaryRes.json() : { income: 0, expenses: 0, balance: 0, savingsRate: 0, transactionCount: 0 };
-    const monthlyData = monthlyRes.ok ? await monthlyRes.json() : [];
-    const transactionsData = transactionsRes.ok ? await transactionsRes.json() : { transactions: [] };
-    const categories = categoriesRes.ok ? await categoriesRes.json() : [];
-
     return Response.json({
-      summary: summary as SummaryStats,
-      monthlyData: monthlyData as MonthlyData[],
-      recentTransactions: transactionsData.transactions || [],
-      categories: categories as Category[],
+      summary,
+      monthlyData,
+      recentTransactions: transactionsData.items,
+      categories: categoriesData,
     });
   } catch (error) {
     console.error('Dashboard loader error:', error);

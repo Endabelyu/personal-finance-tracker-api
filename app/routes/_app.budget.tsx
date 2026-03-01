@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from 'react-router';
 import { useLoaderData, useSearchParams, useNavigation, useFetcher } from 'react-router';
 import { requireSession } from '@app/lib/auth.server';
-import { api } from '@app/lib/api-client';
 import { BudgetCard } from '@app/components/finance/BudgetCard';
 import { BudgetForm } from '@app/components/finance/BudgetForm';
 import { Modal } from '@app/components/ui/Modal';
@@ -12,6 +11,8 @@ import { Input } from '@app/components/ui/Input';
 import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
 import { Plus, Target, Calendar, TrendingUp, Wallet, AlertCircle } from 'lucide-react';
 import type { Budget, Category } from '@db/schema';
+import { listCategories } from '@server/lib/services/categories';
+import { listBudgetsWithSpending, deleteBudget } from '@server/lib/services/budgets';
 
 export const meta: MetaFunction = () => {
   return [
@@ -37,54 +38,36 @@ export async function loader({ request }: LoaderFunctionArgs): Promise<Response>
   const session = await requireSession(request);
   const url = new URL(request.url);
   const month = url.searchParams.get('month') || getCurrentMonth();
-  
+
   try {
-    const [budgetsRes, categoriesRes] = await Promise.all([
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/budgets?month=${month}`, {
-        headers: { Cookie: request.headers.get('Cookie') || '' }
-      }),
-      api.categories.$get(undefined, {
-        headers: { Cookie: request.headers.get('Cookie') || '' }
-      })
+    const [budgets, categoriesData] = await Promise.all([
+      listBudgetsWithSpending(session.userId, month),
+      listCategories(),
     ]);
-    
-    const budgetsData = await budgetsRes.json().catch(() => ({ items: [] }));
-    const categories = await categoriesRes.json().catch(() => []);
-    
-    return Response.json({
-      budgets: budgetsData.items || [],
-      categories: categories || [],
-      month
-    });
+
+    return Response.json({ budgets, categories: categoriesData, month });
   } catch (error) {
     console.error('Budget loader error:', error);
-    return Response.json({
-      budgets: [],
-      categories: [],
-      month
-    }, { status: 500 });
+    return Response.json({ budgets: [], categories: [], month }, { status: 500 });
   }
 }
 
 export async function action({ request }: ActionFunctionArgs): Promise<Response> {
+  const session = await requireSession(request);
   const formData = await request.formData();
   const intent = formData.get('intent') as string;
-  const cookie = request.headers.get('Cookie') || '';
-  
+
   if (intent === 'delete') {
     const id = formData.get('id') as string;
     try {
-      const res = await fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/budgets/${id}`, {
-        method: 'DELETE',
-        headers: { Cookie: cookie }
-      });
-      if (!res.ok) throw new Error('Failed to delete');
+      await deleteBudget(id, session.userId);
       return Response.json({ success: true });
     } catch (error) {
-      return Response.json({ error: 'Failed to delete budget' }, { status: 500 });
+      const err = error as { status?: number; message?: string };
+      return Response.json({ error: err.message || 'Failed to delete budget' }, { status: err.status || 500 });
     }
   }
-  
+
   return Response.json({ error: 'Unknown intent' }, { status: 400 });
 }
 

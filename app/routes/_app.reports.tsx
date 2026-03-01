@@ -4,6 +4,7 @@ import { type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import { useLoaderData, useSearchParams } from 'react-router';
 import { requireSession } from '@app/lib/auth.server';
 import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
+import { getFinancialSummary, getExpensesByCategory, getMonthlyTrend } from '@server/lib/services/reports';
 import {
   LineChart,
   Line,
@@ -76,26 +77,6 @@ interface LoaderData {
   monthly: MonthlyData[];
 }
 
-// API client for reports
-const reportsApi = {
-  summary: async (month: string | undefined, init?: RequestInit): Promise<ReportSummary> => {
-    const query = month ? `?month=${month}` : '';
-    const res = await fetch(`/api/reports/summary${query}`, { ...init, method: 'GET' });
-    if (!res.ok) throw new Error('Failed to fetch summary');
-    return res.json();
-  },
-  byCategory: async (month: string | undefined, init?: RequestInit): Promise<CategoryBreakdown[]> => {
-    const query = month ? `?month=${month}` : '';
-    const res = await fetch(`/api/reports/by-category${query}`, { ...init, method: 'GET' });
-    if (!res.ok) throw new Error('Failed to fetch categories');
-    return res.json();
-  },
-  monthly: async (months: number, init?: RequestInit): Promise<MonthlyData[]> => {
-    const res = await fetch(`/api/reports/monthly?months=${months}`, { ...init, method: 'GET' });
-    if (!res.ok) throw new Error('Failed to fetch monthly data');
-    return res.json();
-  },
-};
 
 // Helper functions
 function formatDateForInput(date: Date): string {
@@ -133,22 +114,12 @@ export async function loader({ request }: LoaderFunctionArgs): Promise<Response>
 
   try {
     const [summary, categories, monthly] = await Promise.all([
-      reportsApi.summary(month, {
-        headers: { Cookie: request.headers.get('Cookie') || '' },
-      }),
-      reportsApi.byCategory(month, {
-        headers: { Cookie: request.headers.get('Cookie') || '' },
-      }),
-      reportsApi.monthly(6, {
-        headers: { Cookie: request.headers.get('Cookie') || '' },
-      }),
+      getFinancialSummary(session.userId, month),
+      getExpensesByCategory(session.userId, month),
+      getMonthlyTrend(session.userId, 6),
     ]);
 
-    return Response.json({
-      summary,
-      categories,
-      monthly,
-    });
+    return Response.json({ summary, categories, monthly });
   } catch (error) {
     console.error('Reports loader error:', error);
     return Response.json(
