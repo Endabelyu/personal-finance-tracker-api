@@ -13,8 +13,6 @@ import {
 import type { ReactNode } from 'react';
 import './styles/animations.css';
 import { ToastProvider } from '@app/components/ui';
-import { WalkthroughProvider } from '@app/context/WalkthroughContext';
-import { Walkthrough } from '@app/components/ui/Walkthrough';
 import { defaultWalkthroughSteps } from '@app/lib/walkthrough-steps';
 
 // Development mode check
@@ -97,12 +95,9 @@ export function Layout({ children }: { children: ReactNode }) {
  */
 export default function App() {
   return (
-    <WalkthroughProvider initialSteps={defaultWalkthroughSteps} autoStartForNewUsers={true}>
-      <ToastProvider>
-        <Outlet />
-        <Walkthrough />
-      </ToastProvider>
-    </WalkthroughProvider>
+    <ToastProvider>
+      <Outlet />
+    </ToastProvider>
   );
 }
 

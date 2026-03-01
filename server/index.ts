@@ -80,10 +80,10 @@ async function getSSRHandler() {
 
   console.log('React Router build loaded, exports:', Object.keys(build).join(', '));
 
-  rrHandler = createRequestHandler({
+  rrHandler = createRequestHandler(
     build,
-    mode: process.env.NODE_ENV as 'development' | 'production',
-  } as any);
+    process.env.NODE_ENV as 'development' | 'production',
+  );
 
   return rrHandler;
 }
@@ -106,7 +106,8 @@ app.all('*', async (c) => {
 
 // Error handler
 app.onError((err, c) => {
-  console.error('Server Error:', err);
+  console.error('Server Error:', err.message);
+  console.error('Stack:', err.stack);
   return c.json({ error: 'Internal Server Error', message: err.message }, 500);
 });
 
