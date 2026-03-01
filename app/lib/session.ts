@@ -1,5 +1,6 @@
 import { redirect } from 'react-router';
-import type { Session } from '@app/lib/auth-client';
+// auth is a server-only import - this file must only be imported in .server.ts files or loaders
+import { auth } from '@server/lib/auth';
 
 /**
  * Session data returned from requireSession
@@ -15,35 +16,29 @@ export interface SessionData {
 }
 
 /**
- * Require an authenticated session, redirect to /auth/login if not authenticated
- * Use in loaders that require authentication
+ * Require an authenticated session, redirect to /auth/login if not authenticated.
+ * Uses Better Auth server API directly — no HTTP round-trip.
  */
 export async function requireSession(request: Request): Promise<SessionData> {
-  const response = await fetch(`${new URL(request.url).origin}/api/auth/session`, {
-    headers: {
-      Cookie: request.headers.get('Cookie') || '',
-    },
-  });
+  const session = await auth.api.getSession({ headers: request.headers });
 
-  if (!response.ok) {
-    throw redirect('/auth/login');
-  }
-
-  const data = await response.json() as { session: Session | null };
-
-  if (!data.session || !data.session.user) {
+  if (!session || !session.user) {
     throw redirect('/auth/login');
   }
 
   return {
-    userId: data.session.user.id,
-    user: data.session.user,
+    userId: session.user.id,
+    user: {
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.name,
+      image: session.user.image,
+    },
   };
 }
 
 /**
  * Get session if it exists, return null otherwise (doesn't redirect)
- * Use in loaders that optionally need session data
  */
 export async function getSession(request: Request): Promise<SessionData | null> {
   try {
@@ -60,6 +55,6 @@ export async function getSession(request: Request): Promise<SessionData | null> 
 export async function requireAnonymous(request: Request): Promise<void> {
   const session = await getSession(request);
   if (session) {
-    throw redirect('/dashboard');
+    throw redirect('/');
   }
 }

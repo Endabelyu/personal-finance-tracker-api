@@ -1,0 +1,20 @@
+No config path provided, using default 'drizzle.config.ts'
+Reading config file 'C:\Project\pi\personal-finance-tracker\drizzle.config.ts'
+Using 'postgres' driver for database querying
+[⣷] Pulling schema from database...
+PostgresError: password authentication failed for user "postgres"
+    at ErrorResponse (file:///C:/Project/pi/personal-finance-tracker/node_modules/postgres/src/connection.js:817:22)
+    at handle (file:///C:/Project/pi/personal-finance-tracker/node_modules/postgres/src/connection.js:489:6)
+    at Socket.data (file:///C:/Project/pi/personal-finance-tracker/node_modules/postgres/src/connection.js:324:9)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TCP.onStreamRead (node:internal/stream_base_commons:189:23) {
+  severity_local: 'FATAL',
+  severity: 'FATAL',
+  code: '28P01',
+  file: 'auth.c',
+  line: '324',
+  routine: 'auth_failed'
+}
