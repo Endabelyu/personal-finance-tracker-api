@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
 import { logger } from 'hono/logger';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
@@ -19,76 +20,83 @@ app.use(cors({
 }));
 app.use(secureHeaders());
 
+// Error handlers at the very top to catch any synchronous module loading errors
+process.on('uncaughtException', (err) => {
+  console.error('🔥 Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('⚠️ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 // Health check endpoint
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 // API routes
 app.route('/api', apiRoutes);
 
-// Serve static assets from build/client
-app.use('/assets/*', async (c) => {
-  const fs = await import('fs');
-  const path = await import('path');
-  const filePath = path.join(process.cwd(), 'build/client', c.req.path);
-  
-  try {
-    const file = fs.readFileSync(filePath);
-    const ext = path.extname(filePath).slice(1);
-    const contentType: Record<string, string> = {
-      js: 'application/javascript',
-      css: 'text/css',
-      png: 'image/png',
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      svg: 'image/svg+xml',
-      webp: 'image/webp',
-      json: 'application/json',
-      ico: 'image/x-icon',
-    };
-    return c.newResponse(file, 200, { 'Content-Type': contentType[ext] || 'application/octet-stream' });
-  } catch {
-    return c.notFound();
-  }
-});
+// Serve hashed assets (React Router build output) - immutable, 1 year cache
+app.use(
+  '/assets/*',
+  serveStatic({
+    root: './build/client',
+    onFound: (_path, c) => {
+      c.res.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+    },
+  })
+);
 
-// Serve other static files (root level)
-app.use('/sw.js', async (c) => {
-  const fs = await import('fs');
-  const path = await import('path');
-  try {
-    const file = fs.readFileSync(path.join(process.cwd(), 'build/client/sw.js'));
-    return c.newResponse(file, 200, { 'Content-Type': 'application/javascript' });
-  } catch {
-    return c.notFound();
+// Serve other static files (favicon, manifest, robots, sw.js, etc.) - 1 hour cache
+app.use(
+  '*',
+  serveStatic({
+    root: './build/client',
+    onFound: (_path, c) => {
+      c.res.headers.set('Cache-Control', 'public, max-age=3600');
+    },
+  })
+);
+
+// Initialize React Router SSR handler once at startup
+// When compiled to build/custom-server/index.js, '../server/index.js' resolves to build/server/index.js
+const isCompiledServer = import.meta.url.includes('custom-server');
+const buildPath = isCompiledServer ? '../server/index.js' : '../build/server/index.js';
+
+let rrHandler: ((request: Request) => Promise<Response>) | null = null;
+
+async function getSSRHandler() {
+  if (rrHandler) return rrHandler;
+
+  const build = await import(/* @vite-ignore */ buildPath).catch((e: Error) => {
+    console.error('Failed to load React Router build:', e.message);
+    return null;
+  }) as any;
+
+  if (!build) {
+    console.error('Build not found or could not be loaded');
+    return null;
   }
-});
+
+  console.log('React Router build loaded, exports:', Object.keys(build).join(', '));
+
+  rrHandler = createRequestHandler({
+    build,
+    mode: process.env.NODE_ENV as 'development' | 'production',
+  } as any);
+
+  return rrHandler;
+}
 
 // React Router handler (catch-all for SSR)
 app.all('*', async (c) => {
   try {
-    // Dynamic import of the React Router SSR build output
-    // Path is relative to the CURRENT FILE's directory.
-    // Stored in a variable so TypeScript cannot statically resolve it (avoids TS2307).
-    // In dev (server/index.ts), it's '../build/server/index.js'.
-    // In prod (build/custom-server/index.js), it's '../server/index.js'.
-    const isCompiled = import.meta.url.includes('custom-server') || process.env.NODE_ENV === 'production';
-    const buildPath = isCompiled ? '../server/index.js' : '../build/server/index.js';
-    // eslint-disable-next-line
-    const build = await import(/* @vite-ignore */ buildPath).catch((e: Error) => {
-      console.error('Failed to load build:', e);
-      return null;
-    }) as any;
-    
-    if (!build || !build.default) {
-      console.error('Build not found or invalid');
-      return c.json({ error: 'Build not found' }, 500);
+    const handler = await getSSRHandler();
+
+    if (!handler) {
+      return c.json({ error: 'Build not found — run npm run build first' }, 500);
     }
-    
-    const handler = createRequestHandler({
-      build: build.default,
-      mode: process.env.NODE_ENV as 'development' | 'production',
-    } as any);
-    
+
     return handler(c.req.raw);
   } catch (error) {
     console.error('SSR Error:', error);
@@ -116,26 +124,4 @@ const server = serve({
   port,
 }, (info: { port: number }) => {
   console.log(`✅ Server running on http://localhost:${info.port}`);
-});
-
-// Explicitly handle termination signals to ensure graceful shutdown
-// and to keep the event loop alive.
-const gracefulShutdown = () => {
-  console.log('Shutting down server gracefully...');
-  server.close(() => {
-    console.log('Server closed.');
-    process.exit(0);
-  });
-};
-
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
-
-process.on('uncaughtException', (err) => {
-  console.error('🔥 Uncaught Exception:', err);
-  process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('⚠️ Unhandled Rejection at:', promise, 'reason:', reason);
 });
