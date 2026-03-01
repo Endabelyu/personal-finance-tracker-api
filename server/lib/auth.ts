@@ -17,6 +17,12 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  trustedOrigins: [
+    'https://personal-finance-tracker.endabelyu.com',
+    'http://personal-finance-tracker.endabelyu.com',
+    'http://localhost:3005',
+    'http://localhost:3002'
+  ]
 });
 
 export const requireAuth: MiddlewareHandler = async (c, next) => {
