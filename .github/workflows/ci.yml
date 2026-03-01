@@ -99,7 +99,6 @@ jobs:
           port: ${{ secrets.VPS_PORT || '22' }}
           script: |
             cd ${{ secrets.VPS_TARGET_DIR }}
-            chmod 644 .env || true
             docker compose up -d --build --force-recreate app
             docker compose exec -T app npm run db:push || true
             docker image prune -f
