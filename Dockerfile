@@ -20,5 +20,5 @@ EXPOSE 3005
 ENV NODE_ENV=production
 ENV PORT=3005
 
-# Start the app: Push database schema changes first, then run server
-CMD ["sh", "-c", "npx drizzle-kit push && node --max-old-space-size=256 ./build/custom-server/index.js"]
+# Start the Hono custom server
+CMD ["node", "--max-old-space-size=256", "./build/custom-server/index.js"]
