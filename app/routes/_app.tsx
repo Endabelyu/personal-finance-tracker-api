@@ -18,8 +18,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function AppRoot() {
   return (
-    <AppLayout>
-      <Outlet />
-    </AppLayout>
+    <WalkthroughProvider initialSteps={defaultWalkthroughSteps} autoStartForNewUsers={true}>
+      <AppLayout>
+        <Outlet />
+      </AppLayout>
+      <Walkthrough />
+    </WalkthroughProvider>
   );
 }
