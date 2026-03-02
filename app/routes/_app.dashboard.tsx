@@ -303,23 +303,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4 md:space-y-6 animate-fade-in pb-20 md:pb-0">
-      {/* Mobile Header - Sticky */}
-      <div className="md:hidden sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm -mx-4 px-4 py-3 border-b border-gray-200/50">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
-            <p className="text-xs text-gray-500">
-              {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-            </p>
-          </div>
-          <Link to="/transactions">
-            <Button size="sm" className="h-9 px-3">
-              <Plus className="w-4 h-4" />
-            </Button>
-          </Link>
-        </div>
-      </div>
-
       {/* Desktop Header */}
       <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -336,48 +319,8 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {/* Stats Grid - Horizontal Scroll on Mobile */}
-      <div className="-mx-4 md:mx-0 overflow-x-auto scrollbar-hide">
-        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 px-4 md:px-0 min-w-max md:min-w-0" data-walkthrough="dashboard-stats">
-          <div className="w-[140px] md:w-auto flex-shrink-0">
-            <StatCard
-              title="Total Balance"
-              value={formatCurrency(summary.balance)}
-              icon={Wallet}
-              variant="primary"
-              isLoading={false}
-            />
-          </div>
-          <div className="w-[140px] md:w-auto flex-shrink-0">
-            <StatCard
-              title="Monthly Income"
-              value={formatCurrency(summary.income)}
-              icon={TrendingUp}
-              variant="income"
-              isLoading={false}
-            />
-          </div>
-          <div className="w-[140px] md:w-auto flex-shrink-0">
-            <StatCard
-              title="Monthly Expenses"
-              value={formatCurrency(summary.expenses)}
-              icon={TrendingDown}
-              variant="expense"
-              isLoading={false}
-            />
-          </div>
-          <div className="w-[140px] md:w-auto flex-shrink-0">
-            <StatCard
-              title="Savings Rate"
-              value={`${summary.savingsRate.toFixed(1)}%`}
-              icon={PiggyBank}
-              variant={summary.savingsRate >= 20 ? 'income' : summary.savingsRate >= 0 ? 'default' : 'expense'}
-              isLoading={false}
-            />
-          </div>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-walkthrough="dashboard-stats">
+      {/* Stats Grid - 2x2 on Mobile, 4x1 on Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4" data-walkthrough="dashboard-stats">
         <StatCard
           title="Total Balance"
           value={formatCurrency(summary.balance)}
@@ -464,8 +407,8 @@ export default function DashboardPage() {
         </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Monthly Chart */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-5">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Income vs Expenses
           </h2>
           {chartData.length === 0 ? (
@@ -517,9 +460,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Transactions */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm order-1 md:order-2">
-          <div className="flex items-center justify-between p-4 md:p-5 border-b border-gray-100">
-            <h2 className="text-base md:text-lg font-semibold text-gray-900">Recent Transactions</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm order-1 md:order-2">
+          <div className="flex items-center justify-between p-4 md:p-5 border-b border-gray-100 dark:border-gray-800">
+            <h2 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Recent Transactions</h2>
             <Link
               to="/transactions"
               className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
@@ -532,7 +475,7 @@ export default function DashboardPage() {
           {recentTransactions.length === 0 ? (
             <EmptyTransactions />
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {recentTransactions.slice(0, 5).map((transaction) => (
                 <TransactionRow
                   key={transaction.id}
@@ -544,7 +487,7 @@ export default function DashboardPage() {
           )}
 
           {recentTransactions.length > 0 && (
-            <div className="p-4 border-t border-gray-100 md:hidden">
+            <div className="p-4 border-t border-gray-100 dark:border-gray-800 md:hidden">
               <Link to="/transactions">
                 <Button variant="outline" className="w-full">
                   View All Transactions

@@ -58,7 +58,7 @@ export function Header({ onMenuClick, title }: HeaderProps) {
           transition-all duration-300 ease-out
           ${isVisible ? 'translate-y-0' : '-translate-y-full'}
           ${isScrolled
-            ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg shadow-sm'
+            ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm border-b border-gray-200/50 dark:border-gray-800/50'
             : 'bg-transparent'
           }
         `}
@@ -84,9 +84,11 @@ export function Header({ onMenuClick, title }: HeaderProps) {
           )}
 
           {/* Center: Title */}
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate max-w-[200px]">
-            {pageTitle}
-          </h1>
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <h1 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white truncate max-w-[160px] sm:max-w-[200px]">
+              {pageTitle}
+            </h1>
+          </div>
 
           {/* Right: Actions */}
           <div className="flex items-center gap-1">

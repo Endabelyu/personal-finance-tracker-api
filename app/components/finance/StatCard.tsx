@@ -12,36 +12,36 @@ interface StatCardProps {
 
 const variantStyles = {
   default: {
-    bg: 'bg-gray-50',
-    border: 'border-gray-100',
-    iconBg: 'bg-gray-100',
-    iconColor: 'text-gray-600',
-    titleColor: 'text-gray-600',
-    valueColor: 'text-gray-900',
+    bg: 'bg-gray-50 dark:bg-gray-800/50',
+    border: 'border-gray-100 dark:border-gray-700/50',
+    iconBg: 'bg-gray-100 dark:bg-gray-800',
+    iconColor: 'text-gray-600 dark:text-gray-300',
+    titleColor: 'text-gray-600 dark:text-gray-400',
+    valueColor: 'text-gray-900 dark:text-gray-50',
   },
   primary: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-100',
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-blue-600',
-    titleColor: 'text-blue-700',
-    valueColor: 'text-blue-900',
+    bg: 'bg-blue-50/50 dark:bg-blue-900/20',
+    border: 'border-blue-100 dark:border-blue-800/50',
+    iconBg: 'bg-blue-100 dark:bg-blue-900/50',
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    titleColor: 'text-blue-700 dark:text-blue-300',
+    valueColor: 'text-blue-900 dark:text-blue-50',
   },
   income: {
-    bg: 'bg-green-50',
-    border: 'border-green-100',
-    iconBg: 'bg-green-100',
-    iconColor: 'text-green-600',
-    titleColor: 'text-green-700',
-    valueColor: 'text-green-900',
+    bg: 'bg-green-50/50 dark:bg-emerald-900/10',
+    border: 'border-green-100 dark:border-emerald-800/30',
+    iconBg: 'bg-green-100 dark:bg-emerald-900/40',
+    iconColor: 'text-green-600 dark:text-emerald-400',
+    titleColor: 'text-green-700 dark:text-emerald-400',
+    valueColor: 'text-green-900 dark:text-emerald-50',
   },
   expense: {
-    bg: 'bg-red-50',
-    border: 'border-red-100',
-    iconBg: 'bg-red-100',
-    iconColor: 'text-red-600',
-    titleColor: 'text-red-700',
-    valueColor: 'text-red-900',
+    bg: 'bg-red-50/50 dark:bg-rose-900/10',
+    border: 'border-red-100 dark:border-rose-800/30',
+    iconBg: 'bg-red-100 dark:bg-rose-900/40',
+    iconColor: 'text-red-600 dark:text-rose-400',
+    titleColor: 'text-red-700 dark:text-rose-400',
+    valueColor: 'text-red-900 dark:text-rose-50',
   },
 };
 
@@ -100,17 +100,17 @@ export function StatCard({
               <span
                 className={`text-sm font-medium ${
                   changeIsPositive
-                    ? 'text-green-600'
+                    ? 'text-green-600 dark:text-emerald-400'
                     : changeIsNegative
-                    ? 'text-red-600'
-                    : 'text-gray-500'
+                    ? 'text-red-600 dark:text-rose-400'
+                    : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
                 {change > 0 ? '+' : ''}
                 {change.toFixed(1)}%
               </span>
               {changeLabel && (
-                <span className="text-sm text-gray-500 truncate">{changeLabel}</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400 truncate">{changeLabel}</span>
               )}
             </div>
           )}
