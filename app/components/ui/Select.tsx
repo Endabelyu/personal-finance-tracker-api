@@ -21,20 +21,20 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, helperText, options, groups, className = '', children, ...props }, ref) => {
     const baseStyles = `
-      block w-full rounded-lg border-gray-300
+      block w-full rounded-2xl border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-md
       shadow-sm
-      text-gray-900
-      bg-white appearance-none cursor-pointer
-      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
-      disabled:bg-gray-50 disabled:text-gray-500
+      text-[var(--text-primary)]
+      appearance-none cursor-pointer
+      focus:outline-none focus:ring-2 focus:ring-[var(--gradient-hero-start)]/20 focus:border-[var(--gradient-hero-start)]
+      disabled:opacity-50
       transition-all duration-200 ease-out
     `;
 
     const errorStyles = error
-      ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-      : 'border-gray-300 hover:border-gray-400';
+      ? 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
+      : 'hover:border-[var(--text-primary)]/40';
 
-    const sizeStyles = 'px-3 py-2 text-sm h-10';
+    const sizeStyles = 'px-4 py-3 text-sm min-h-[44px]';
 
     return (
       <div className="space-y-1.5">

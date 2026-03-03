@@ -193,7 +193,7 @@ export default function TransactionsPage() {
           </div>
           <Button
             onClick={() => setIsModalOpen(true)}
-            className="hidden md:flex h-11 px-6 bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all duration-200"
+            className="hidden md:flex h-11 px-6 shadow-sm hover:shadow transition-all duration-200"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Transaction
@@ -253,27 +253,27 @@ export default function TransactionsPage() {
         <select
           value={currentType}
           onChange={(e) => updateFilters({ type: e.target.value })}
-          className="px-3 py-2 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)]"
+          className="px-4 py-3 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)] min-h-[44px] appearance-none"
         >
-          <option value="">All Types</option>
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
+          <option value="" className="bg-[var(--app-bg-start)] text-[var(--text-primary)]">All Types</option>
+          <option value="income" className="bg-[var(--app-bg-start)] text-[var(--text-primary)]">Income</option>
+          <option value="expense" className="bg-[var(--app-bg-start)] text-[var(--text-primary)]">Expense</option>
         </select>
         <select
           value={currentCategory}
           onChange={(e) => updateFilters({ category: e.target.value })}
-          className="px-3 py-2 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)]"
+          className="px-4 py-3 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)] min-h-[44px] appearance-none"
         >
-          <option value="">All Categories</option>
+          <option value="" className="bg-[var(--app-bg-start)] text-[var(--text-primary)]">All Categories</option>
           {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.label}</option>
+            <option key={c.id} value={c.id} className="bg-[var(--app-bg-start)] text-[var(--text-primary)]">{c.label}</option>
           ))}
         </select>
         <input
           type="month"
           value={currentMonth}
           onChange={(e) => updateFilters({ month: e.target.value })}
-          className="px-3 py-2 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)]"
+          className="px-4 py-3 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)] min-h-[44px] appearance-none"
         />
       </div>
       
@@ -281,6 +281,9 @@ export default function TransactionsPage() {
       <div className="space-y-3">
         {transactions.length === 0 ? (
           <div className="text-center py-16 px-4 glass-card">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--text-primary)]/5 flex items-center justify-center">
+              <Search className="w-8 h-8 text-[var(--text-secondary)]" />
+            </div>
             <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No transactions found</h3>
             <p className="text-[var(--text-secondary)] mb-6">Get started by adding your first transaction.</p>
             <Button onClick={() => setIsModalOpen(true)}>

@@ -8,11 +8,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm hover:shadow',
-  secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-  outline: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500 hover:border-gray-400',
-  ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
-  danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm hover:shadow',
+  primary: 'bg-[var(--gradient-hero-start)] text-[var(--app-bg-start)] hover:brightness-110 focus:ring-[var(--gradient-hero-start)]/50 shadow-sm hover:shadow',
+  secondary: 'bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] border border-[var(--card-border)] hover:bg-[var(--text-primary)]/5 focus:ring-[var(--card-border)]',
+  outline: 'bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] border border-[var(--card-border)] hover:bg-[var(--text-primary)]/5 focus:ring-[var(--card-border)] hover:border-[var(--text-primary)]/40',
+  ghost: 'bg-transparent text-[var(--text-primary)] hover:bg-[var(--text-primary)]/5 focus:ring-[var(--text-primary)]/20',
+  danger: 'bg-[var(--gradient-danger-start)] text-white hover:brightness-110 focus:ring-[var(--gradient-danger-start)]/50 shadow-sm hover:shadow',
 };
 
 const sizeStyles = {

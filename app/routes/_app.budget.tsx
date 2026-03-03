@@ -148,12 +148,12 @@ export default function BudgetPage() {
             <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] tracking-tight">Budget</h1>
             <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-0.5">
               Track spending limits
-              <span className="hidden sm:inline text-gray-400 ml-2">(Cmd/Ctrl+N to add new)</span>
+              <span className="hidden sm:inline text-[var(--text-secondary)] opacity-60 ml-2">(Cmd/Ctrl+N to add new)</span>
             </p>
           </div>
           <Button
             onClick={() => setIsModalOpen(true)}
-            className="hidden md:flex h-11 px-6 bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all duration-200"
+            className="hidden md:flex h-11 px-6 shadow-sm hover:shadow transition-all duration-200"
           >
             <Plus className="w-4 h-4 mr-2" />
             Set Budget
@@ -217,21 +217,21 @@ export default function BudgetPage() {
       </div>
       
       {budgets.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
+        <div className="glass-card p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-700">Overall Budget Usage</h3>
+            <h3 className="text-sm font-semibold text-[var(--text-secondary)]">Overall Budget Usage</h3>
             <span className={`text-sm font-bold ${
-              overallPercentage > 90 ? 'text-red-600' :
-              overallPercentage > 75 ? 'text-yellow-600' : 'text-green-600'
+              overallPercentage > 90 ? 'text-[var(--gradient-danger-start)]' :
+              overallPercentage > 75 ? 'text-amber-500' : 'text-[var(--gradient-success-start)]'
             }`}>
               {overallPercentage}%
             </span>
           </div>
-          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-3 bg-[var(--text-primary)]/10 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
-                overallPercentage > 90 ? 'bg-red-500' :
-                overallPercentage > 75 ? 'bg-yellow-500' : 'bg-green-500'
+                overallPercentage > 90 ? 'bg-[var(--gradient-danger-start)]' :
+                overallPercentage > 75 ? 'bg-amber-500' : 'bg-[var(--gradient-success-start)]'
               }`}
               style={{ width: `${Math.min(overallPercentage, 100)}%` }}
             />
@@ -241,9 +241,9 @@ export default function BudgetPage() {
       
       <div className="space-y-6">
         {budgets.length === 0 && categoriesWithoutBudget.length === 0 ? (
-          <div className="text-center py-16 px-4 bg-white rounded-xl border border-gray-200">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <Target className="w-8 h-8 text-gray-400" />
+          <div className="text-center py-16 px-4 glass-card">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--text-primary)]/5 flex items-center justify-center">
+              <Target className="w-8 h-8 text-[var(--text-secondary)]" />
             </div>
             <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No budgets set</h3>
             <p className="text-[var(--text-secondary)] mb-6 max-w-sm mx-auto">
@@ -258,7 +258,7 @@ export default function BudgetPage() {
           <>
             {budgets.length > 0 && (
               <div>
-                <h2 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-[var(--text-secondary)] mb-4 flex items-center gap-2">
                   <Target className="w-4 h-4" />
                   Active Budgets
                 </h2>
@@ -277,7 +277,7 @@ export default function BudgetPage() {
             
             {categoriesWithoutBudget.length > 0 && (
               <div>
-                <h2 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-[var(--text-secondary)] mb-4 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4" />
                   Categories Without Budgets
                 </h2>
@@ -285,7 +285,7 @@ export default function BudgetPage() {
                   {categoriesWithoutBudget.map((category) => (
                     <div
                       key={category.id}
-                      className="bg-gray-50 border border-gray-200 border-dashed rounded-xl p-4 hover:border-gray-300 transition-colors cursor-pointer"
+                      className="glass-card p-4 hover:border-[var(--text-primary)]/20 transition-colors cursor-pointer border-dashed"
                       onClick={() => {
                         setEditingBudget({
                           id: '',

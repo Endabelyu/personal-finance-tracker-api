@@ -99,13 +99,13 @@ export function BudgetCard({ budget, onEdit, onDelete, isDeleting }: BudgetCardP
         </div>
 
         {/* Progress Bar */}
-        <div className="h-3 w-full bg-white/10 dark:bg-[#1A1A1A]/50 rounded-full overflow-visible relative mb-2 shadow-inner">
+        <div className="h-3 w-full bg-[var(--text-primary)]/10 rounded-full overflow-visible relative mb-2 shadow-inner">
           <div
             className={`h-full ${status.bar} rounded-full transition-all duration-500 ease-out`}
             style={{ width: `${Math.min(percentage, 100)}%` }}
           />
           {percentage >= 100 && (
-             <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-6 h-6 bg-rose-500 border-2 border-white dark:border-[#2C2D35] rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md z-10">
+             <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-6 h-6 bg-rose-500 border-2 border-[var(--card-bg)] rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md z-10">
                !
              </div>
           )}
