@@ -16,8 +16,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import {
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -25,15 +25,15 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import type { Transaction, Category } from '@db/schema';
+import type { Transaction, Category } from '@app/types';
 import {
   StatCardSkeleton,
   ChartSkeleton,
   TransactionItemSkeleton,
 } from '@app/components/ui';
-import { listCategories } from '@server/lib/services/categories';
-import { listTransactions } from '@server/lib/services/transactions';
-import { getFinancialSummary, getMonthlyTrend } from '@server/lib/services/reports';
+import { listCategories } from '@server/lib/services/categories.server';
+import { listTransactions } from '@server/lib/services/transactions.server';
+import { getFinancialSummary, getMonthlyTrend } from '@server/lib/services/reports.server';
 
 // ============================================================================
 // META
@@ -70,6 +70,7 @@ interface LoaderData {
   recentTransactions: Transaction[];
   monthlyData: MonthlyData[];
   categories: Category[];
+  user: { name?: string; email: string };
 }
 
 // ============================================================================
@@ -95,6 +96,7 @@ export async function loader({ request }: LoaderFunctionArgs): Promise<Response>
       monthlyData,
       recentTransactions: transactionsData.items,
       categories: categoriesData,
+      user: session.user,
     });
   } catch (error) {
     console.error('Dashboard loader error:', error);
@@ -103,6 +105,7 @@ export async function loader({ request }: LoaderFunctionArgs): Promise<Response>
       monthlyData: [],
       recentTransactions: [],
       categories: [],
+      user: session.user,
     }, { status: 500 });
   }
 }
@@ -176,10 +179,10 @@ function TransactionRow({
   const categoryColor = category?.color || '#9ca3af';
 
   return (
-    <div className="flex items-center justify-between py-3 px-4 hover:bg-gray-50 transition-colors">
-      <div className="flex items-center gap-3 min-w-0">
+    <div className="flex items-center justify-between py-3 px-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+      <div className="flex items-center gap-4 min-w-0">
         <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+          className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 border-2 border-[#2C2D35]/15"
           style={{ backgroundColor: `${categoryColor}20` }}
         >
           <div
@@ -272,11 +275,10 @@ function DashboardSkeleton() {
 // ============================================================================
 
 export default function DashboardPage() {
-  const { summary, recentTransactions, monthlyData, categories } = useLoaderData<LoaderData>();
+  const { summary, recentTransactions, monthlyData, categories, user } = useLoaderData<LoaderData>();
   const navigation = useNavigation();
   const isLoading = navigation.state === 'loading';
 
-  // Keyboard shortcut: Cmd/Ctrl+K to navigate to transactions
   useKeyboardShortcuts([
     {
       key: 'k',
@@ -288,230 +290,142 @@ export default function DashboardPage() {
     },
   ]);
 
-  // Format monthly data for chart
-  const chartData = monthlyData.map((d) => ({
-    name: formatMonthLabel(d.month),
-    fullMonth: d.month,
-    income: d.income,
-    expenses: d.expenses,
-    balance: d.balance,
-  }));
-
   if (isLoading) {
     return <DashboardSkeleton />;
   }
 
+  const firstName = user.name ? user.name.split(' ')[0] : 'User';
+  const currentMonthLabel = monthlyData[monthlyData.length - 1] 
+    ? formatMonthLabel(monthlyData[monthlyData.length - 1].month) 
+    : 'Bulan ini';
+
   return (
-    <div className="space-y-4 md:space-y-6 animate-fade-in pb-20 md:pb-0">
-      {/* Desktop Header */}
-      <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 md:space-y-8 animate-fade-in pb-24 md:pb-6 px-4 pt-4 max-w-lg mx-auto lg:max-w-none">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Overview of your financial health
+          <p className="text-sm font-medium text-white/70 flex items-center gap-1">
+            Selamat pagi <span className="text-lg">👋</span>
           </p>
+          <h1 className="text-2xl font-bold text-white mt-0.5">{firstName}</h1>
         </div>
-        <Link to="/transactions">
-          <Button className="w-full sm:w-auto touch-target">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Transaction
-          </Button>
+        <Link to="/profile" className="w-12 h-12 rounded-full glass-card flex items-center justify-center text-2xl shadow-inner cursor-pointer hover:border-white/30 transition-colors">
+          😎
         </Link>
       </div>
 
-      {/* Stats Grid - 2x2 on Mobile, 4x1 on Desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4" data-walkthrough="dashboard-stats">
-        <StatCard
-          title="Total Balance"
-          value={formatCurrency(summary.balance)}
-          icon={Wallet}
-          variant="primary"
-          isLoading={false}
-        />
-        <StatCard
-          title="Monthly Income"
-          value={formatCurrency(summary.income)}
-          icon={TrendingUp}
-          variant="income"
-          isLoading={false}
-        />
-        <StatCard
-          title="Monthly Expenses"
-          value={formatCurrency(summary.expenses)}
-          icon={TrendingDown}
-          variant="expense"
-          isLoading={false}
-        />
-        <StatCard
-          title="Savings Rate"
-          value={`${summary.savingsRate.toFixed(1)}%`}
-          icon={PiggyBank}
-          variant={summary.savingsRate >= 20 ? 'income' : summary.savingsRate >= 0 ? 'default' : 'expense'}
-          isLoading={false}
-        />
-      </div>
-
-      {/* Charts and Recent Transactions - Single Column on Mobile */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Monthly Chart */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-5 order-2 md:order-1">
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 mb-4">
-            Income vs Expenses
-          </h2>
-          {chartData.length === 0 ? (
-            <div className="h-48 md:h-64 flex items-center justify-center text-gray-500">
-              No data available
-            </div>
-          ) : (
-            <div className="h-48 md:h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#6b7280', fontSize: 11 }}
-                    dy={10}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#6b7280', fontSize: 11 }}
-                    tickFormatter={(value: number) => `$${value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value}`}
-                    width={45}
-                  />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Legend
-                    wrapperStyle={{ paddingTop: 16 }}
-                    iconType="circle"
-                  />
-                  <Bar
-                    name="income"
-                    dataKey="income"
-                    fill="#22c55e"
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={40}
-                  />
-                  <Bar
-                    name="expenses"
-                    dataKey="expenses"
-                    fill="#ef4444"
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={40}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
+      {/* Hero Card - Total Saldo */}
+      <div className="relative overflow-hidden rounded-[2rem] p-6 text-white shadow-2xl shadow-blue-500/20 bg-gradient-to-br from-[var(--gradient-hero-start)] to-[var(--gradient-hero-end)]">
+        <div className="absolute top-0 right-0 p-8 opacity-20 pointer-events-none">
+          <div className="w-32 h-32 rounded-full bg-white blur-3xl mix-blend-overlay"></div>
         </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Monthly Chart */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-5">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Income vs Expenses
-          </h2>
-          {chartData.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-gray-500">
-              No data available
+        <div className="relative z-10">
+          <p className="text-[10px] font-bold tracking-widest uppercase text-white/80 mb-1">Total Saldo</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-1">{formatCurrency(summary.balance).replace('$', 'Rp ')}</h2>
+          <p className="text-xs text-white/80 mb-6">Semua akun • {currentMonthLabel}</p>
+          
+          <div className="flex items-center gap-6">
+            <div>
+              <p className="text-[10px] flex items-center gap-1 text-white/80 uppercase font-bold"><TrendingUp className="w-3 h-3"/> Masuk</p>
+              <p className="text-sm font-bold mt-0.5">+{formatCurrency(summary.income).replace('$', '')}</p>
             </div>
-          ) : (
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#6b7280', fontSize: 12 }}
-                    dy={10}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#6b7280', fontSize: 12 }}
-                    tickFormatter={(value: number) => `$${value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value}`}
-                    width={50}
-                  />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Legend
-                    wrapperStyle={{ paddingTop: 20 }}
-                    iconType="circle"
-                  />
-                  <Bar
-                    name="income"
-                    dataKey="income"
-                    fill="#22c55e"
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={50}
-                  />
-                  <Bar
-                    name="expenses"
-                    dataKey="expenses"
-                    fill="#ef4444"
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={50}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+            <div>
+              <p className="text-[10px] flex items-center gap-1 text-white/80 uppercase font-bold"><TrendingDown className="w-3 h-3"/> Keluar</p>
+              <p className="text-sm font-bold mt-0.5">-{formatCurrency(summary.expenses).replace('$', '')}</p>
             </div>
-          )}
-        </div>
-
-        {/* Recent Transactions */}
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm order-1 md:order-2">
-          <div className="flex items-center justify-between p-4 md:p-5 border-b border-gray-100 dark:border-gray-800">
-            <h2 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Recent Transactions</h2>
-            <Link
-              to="/transactions"
-              className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
-            >
-              <span className="hidden sm:inline">View all</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
-
-          {recentTransactions.length === 0 ? (
-            <EmptyTransactions />
-          ) : (
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
-              {recentTransactions.slice(0, 5).map((transaction) => (
-                <TransactionRow
-                  key={transaction.id}
-                  transaction={transaction}
-                  category={categories.find((c) => c.id === transaction.categoryId)}
-                />
-              ))}
-            </div>
-          )}
-
-          {recentTransactions.length > 0 && (
-            <div className="p-4 border-t border-gray-100 dark:border-gray-800 md:hidden">
-              <Link to="/transactions">
-                <Button variant="outline" className="w-full">
-                  View All Transactions
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Mobile FAB - Floating Action Button */}
-      <Link
-        to="/transactions"
-        className="md:hidden fixed bottom-20 right-4 z-30"
-      >
-        <Button
-          size="lg"
-          className="h-14 w-14 rounded-full shadow-lg shadow-blue-500/30"
-        >
-          <Plus className="w-6 h-6" />
-        </Button>
-      </Link>
-    </div>
+      {/* Quick Actions */}
+      <div className="grid grid-cols-4 gap-3 pt-2">
+        {[
+          { label: 'Keluar', icon: TrendingDown, color: 'text-emerald-400', route: '/transactions?new=true&type=expense' },
+          { label: 'Masuk', icon: TrendingUp, color: 'text-amber-400', route: '/transactions?new=true&type=income' },
+          { label: 'Transfer', icon: ArrowRight, color: 'text-blue-400', route: '/transactions' },
+          { label: 'Laporan', icon: Receipt, color: 'text-rose-400', route: '/reports' },
+        ].map(action => (
+          <Link key={action.label} to={action.route} className="flex flex-col items-center gap-2">
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-[1.25rem] glass-card flex items-center justify-center hover:scale-105 transition-transform">
+              <action.icon className={`w-6 h-6 ${action.color}`} strokeWidth={2.5} />
+            </div>
+            <span className="text-[11px] font-semibold text-white/80">{action.label}</span>
+          </Link>
+        ))}
+      </div>
+
+      {/* Akun Saya (Mocked for visual parity with design) */}
+      <div className="pt-2">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-white">Akun Saya</h3>
+          <Link to="/profile" className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors">
+            + Tambah
+          </Link>
+        </div>
+        
+        <div className="flex overflow-x-auto gap-3 pb-4 snap-x -mx-4 px-4 scrollbar-hide">
+          <div className="glass-card p-4 min-w-[140px] snap-center flex-shrink-0 border-blue-400/30">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2">
+              <Wallet className="w-3 h-3 text-blue-400" /> BCA
+            </div>
+            <p className="text-lg font-bold text-blue-400">5.200.000</p>
+            <p className="text-[10px] text-white/50">Tabungan</p>
+          </div>
+          
+          <div className="glass-card p-4 min-w-[140px] snap-center flex-shrink-0">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2">
+              <Wallet className="w-3 h-3 text-slate-400" /> Mandiri
+            </div>
+            <p className="text-lg font-bold text-white">2.100.000</p>
+            <p className="text-[10px] text-white/50">Gaji</p>
+          </div>
+          
+          <div className="glass-card p-4 min-w-[140px] snap-center flex-shrink-0">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2">
+              <Wallet className="w-3 h-3 text-emerald-400" /> Cash
+            </div>
+            <p className="text-lg font-bold text-white">1.150.000</p>
+            <p className="text-[10px] text-white/50">Dompet</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Banner Insight */}
+      <div className="glass-card p-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl flex-shrink-0 border border-white/10">
+          🤖
+        </div>
+        <p className="text-[11px] leading-relaxed text-white/80">
+          Kamu <span className="text-blue-400 font-bold">hemat 15%</span> buat makan bulan ini! Tapi transport naik 22% 👀
+        </p>
+      </div>
+
+      {/* Terbaru */}
+      <div className="pt-2">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-white">Terbaru</h3>
+          <Link to="/transactions" className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+            Lihat Semua <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+        
+        {recentTransactions.length === 0 ? (
+          <div className="glass-card p-6 text-center">
+            <p className="text-sm text-white/60">No transactions recorded yet.</p>
+          </div>
+        ) : (
+          <div className="glass-card divide-y divide-white/5">
+            {recentTransactions.map((transaction) => {
+              const category = categories.find((c) => c.id === transaction.categoryId);
+              return (
+                <TransactionRow key={transaction.id} transaction={transaction} category={category} />
+              );
+            })}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

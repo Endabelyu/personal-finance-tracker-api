@@ -4,7 +4,7 @@ import { type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import { useLoaderData, useSearchParams } from 'react-router';
 import { requireSession } from '@app/lib/auth.server';
 import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
-import { getFinancialSummary, getExpensesByCategory, getMonthlyTrend } from '@server/lib/services/reports';
+import { getFinancialSummary, getExpensesByCategory, getMonthlyTrend } from '@server/lib/services/reports.server';
 import {
   LineChart,
   Line,
@@ -186,21 +186,21 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon, trend, trendValue, color }: StatCardProps) {
   const colorStyles = {
-    green: 'bg-green-50 border-green-100 text-green-700',
-    red: 'bg-red-50 border-red-100 text-red-700',
-    blue: 'bg-blue-50 border-blue-100 text-blue-700',
-    purple: 'bg-purple-50 border-purple-100 text-purple-700',
+    green: 'glass-card dark:bg-emerald-950/20 text-emerald-500 dark:text-emerald-400',
+    red: 'glass-card dark:bg-rose-950/20 text-rose-500 dark:text-rose-400',
+    blue: 'glass-card dark:bg-blue-950/20 text-[#5c4a44] dark:text-blue-400',
+    purple: 'glass-card dark:bg-purple-950/20 text-[#5c4a44] dark:text-purple-400',
   };
 
   const iconBgStyles = {
-    green: 'bg-green-100 text-green-600',
-    red: 'bg-red-100 text-red-600',
-    blue: 'bg-blue-100 text-blue-600',
-    purple: 'bg-purple-100 text-purple-600',
+    green: 'bg-emerald-500/20 text-emerald-500',
+    red: 'bg-rose-500/20 text-rose-500',
+    blue: 'bg-[var(--text-primary)]/10 text-[#5c4a44]',
+    purple: 'bg-[var(--text-primary)]/10 text-[#5c4a44]',
   };
 
   return (
-    <div className={`rounded-xl border p-4 md:p-5 ${colorStyles[color]} transition-all duration-200 hover:shadow-md`}>
+    <div className={`rounded-[2rem] border border-[var(--card-border)] p-4 md:p-5 ${colorStyles[color]} transition-transform duration-200 hover:-translate-y-0.5`}>
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-xs md:text-sm font-medium opacity-80 truncate">{title}</p>
@@ -241,7 +241,7 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-3">
+      <div className="glass-card rounded-lg shadow-lg border border-[var(--card-border)] p-3">
         <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 text-sm">
@@ -326,50 +326,46 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-4 md:space-y-6 animate-fade-in pb-20 md:pb-0">
-      {/* Mobile Header with View Toggle */}
-      <div className="md:hidden flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Reports</h1>
-          <p className="text-xs text-gray-500">
-            {new Date(currentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setViewMode('charts')}
-            className={`p-2 rounded-lg transition-colors ${viewMode === 'charts' ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
-          >
-            <LayoutGrid className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
-          >
-            <List className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Desktop Header */}
-      <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
+      {/* Consolidated Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="hidden md:block">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Reports & Analytics</h1>
           <p className="text-sm text-gray-500 mt-1">
             Track your financial health and spending patterns
           </p>
         </div>
+        
+        <div className="md:hidden flex justify-between items-center w-full">
+            <p className="text-sm font-medium text-gray-600">
+                {new Date(currentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setViewMode('charts')}
+                className={`p-2 rounded-lg transition-colors ${viewMode === 'charts' ? 'bg-[var(--text-primary)]/10 text-[#5c4a44]' : 'text-gray-500 hover:bg-[#5c4a44]/5'}`}
+              >
+                <LayoutGrid className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-[var(--text-primary)]/10 text-[#5c4a44]' : 'text-gray-500 hover:bg-[#5c4a44]/5'}`}
+              >
+                <List className="w-5 h-5" />
+              </button>
+            </div>
+        </div>
 
         {/* Date Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-end sm:self-auto">
           <Calendar className="w-5 h-5 text-gray-400" />
           <div className="relative">
             <input
               type="month"
               value={currentMonth}
               onChange={(e) => handleMonthChange(e.target.value)}
-              className="h-10 px-3 pr-8 text-sm rounded-lg border border-gray-300
-                bg-white appearance-none cursor-pointer touch-target
-                focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+              className="h-10 px-3 pr-8 text-sm rounded-lg border border-[var(--card-border)]
+                bg-white dark:bg-[#1E1F26] text-[#5c4a44] dark:text-white appearance-none cursor-pointer touch-target
+                focus:outline-none focus:ring-2 focus:ring-[var(--gradient-hero-start)]/20 focus:border-[#5c4a44]
                 transition-all duration-200"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -415,10 +411,10 @@ export default function ReportsPage() {
       <div className="space-y-4 md:space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Income vs Expenses Trend */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+          <div className="glass-card rounded-[2rem] border border-[var(--card-border)] p-4 md:p-6">
             <div className="flex items-center gap-3 mb-4 md:mb-6">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 rounded-lg bg-[var(--text-primary)]/10 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-[#5c4a44]" />
               </div>
               <div>
                 <h2 className="text-base md:text-lg font-semibold text-gray-900">Income vs Expenses</h2>
@@ -434,15 +430,15 @@ export default function ReportsPage() {
               <div className="h-48 md:h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={monthlyChartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#5c4a44" strokeOpacity={0.1} />
                     <XAxis
                       dataKey="monthLabel"
-                      tick={{ fontSize: 11, fill: '#6b7280' }}
-                      axisLine={{ stroke: '#e5e7eb' }}
+                      tick={{ fontSize: 11, fill: '#5c4a44', opacity: 0.6 }}
+                      axisLine={{ stroke: '#5c4a44', strokeOpacity: 0.15 }}
                       tickLine={false}
                     />
                     <YAxis
-                      tick={{ fontSize: 11, fill: '#6b7280' }}
+                      tick={{ fontSize: 11, fill: '#5c4a44', opacity: 0.6 }}
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
@@ -452,25 +448,25 @@ export default function ReportsPage() {
                       verticalAlign="top"
                       height={30}
                       iconType="circle"
-                      wrapperStyle={{ fontSize: 12 }}
+                      wrapperStyle={{ fontSize: '12px', color: '#5c4a44' }}
                     />
                     <Line
                       type="monotone"
                       dataKey="income"
                       name="Income"
-                      stroke="#22c55e"
-                      strokeWidth={2}
-                      dot={false}
-                      activeDot={{ r: 4 }}
+                      stroke="#4a9473"
+                      strokeWidth={3}
+                      dot={{ r: 4, strokeWidth: 2, fill: '#FAF0E6' }}
+                      activeDot={{ r: 6 }}
                     />
                     <Line
                       type="monotone"
                       dataKey="expenses"
                       name="Expenses"
-                      stroke="#ef4444"
-                      strokeWidth={2}
-                      dot={false}
-                      activeDot={{ r: 4 }}
+                      stroke="#c0544a"
+                      strokeWidth={3}
+                      dot={{ r: 4, strokeWidth: 2, fill: '#FAF0E6' }}
+                      activeDot={{ r: 6 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -479,10 +475,10 @@ export default function ReportsPage() {
           </div>
 
           {/* Spending by Category */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+          <div className="glass-card rounded-[2rem] border border-[var(--card-border)] p-4 md:p-6">
             <div className="flex items-center gap-3 mb-4 md:mb-6">
-              <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                <PieChartIcon className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 rounded-lg bg-[var(--text-primary)]/10 flex items-center justify-center">
+                <PieChartIcon className="w-5 h-5 text-[#5c4a44]" />
               </div>
               <div>
                 <h2 className="text-base md:text-lg font-semibold text-gray-900">Spending by Category</h2>
@@ -518,9 +514,9 @@ export default function ReportsPage() {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload;
                           return (
-                            <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-3">
+                            <div className="glass-card rounded-lg shadow-lg border border-[var(--card-border)] p-3">
                               <p className="text-sm font-medium text-gray-900">{data.label}</p>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-[#5c4a44]">
                                 {formatCurrency(data.amount)} ({data.percentage}%)
                               </p>
                             </div>
@@ -550,10 +546,10 @@ export default function ReportsPage() {
           </div>
 
           {/* Savings Rate Over Time */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 lg:col-span-2">
+          <div className="glass-card rounded-[2rem] border border-[var(--card-border)] p-4 md:p-6 lg:col-span-2">
             <div className="flex items-center gap-3 mb-4 md:mb-6">
-              <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-indigo-600" />
+              <div className="w-10 h-10 rounded-lg bg-[#4a9473]/10 flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-emerald-500" />
               </div>
               <div>
                 <h2 className="text-base md:text-lg font-semibold text-gray-900">Savings Rate Over Time</h2>
@@ -571,19 +567,19 @@ export default function ReportsPage() {
                   <AreaChart data={monthlyChartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
                     <defs>
                       <linearGradient id="colorSavings" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#4a9473" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#4a9473" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#5c4a44" strokeOpacity={0.1} />
                     <XAxis
                       dataKey="monthLabel"
-                      tick={{ fontSize: 11, fill: '#6b7280' }}
-                      axisLine={{ stroke: '#e5e7eb' }}
+                      tick={{ fontSize: 11, fill: '#5c4a44', opacity: 0.6 }}
+                      axisLine={{ stroke: '#5c4a44', strokeOpacity: 0.15 }}
                       tickLine={false}
                     />
                     <YAxis
-                      tick={{ fontSize: 11, fill: '#6b7280' }}
+                      tick={{ fontSize: 11, fill: '#5c4a44', opacity: 0.6 }}
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={(value) => `${value.toFixed(0)}%`}
@@ -593,9 +589,9 @@ export default function ReportsPage() {
                       content={({ active, payload, label }: { active?: boolean; payload?: ReadonlyArray<{ value: number }>; label?: string | number }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-3">
+                            <div className="glass-card rounded-lg shadow-lg border border-[var(--card-border)] p-3">
                               <p className="text-sm font-medium text-gray-900 mb-1">{label}</p>
-                              <p className="text-sm text-indigo-600 font-medium">
+                              <p className="text-sm text-emerald-500 font-medium">
                                 Savings Rate: {payload[0].value.toFixed(1)}%
                               </p>
                             </div>
@@ -608,7 +604,7 @@ export default function ReportsPage() {
                       type="monotone"
                       dataKey="savingsRate"
                       name="Savings Rate"
-                      stroke="#6366f1"
+                      stroke="#4a9473"
                       strokeWidth={2}
                       fillOpacity={1}
                       fill="url(#colorSavings)"
@@ -621,11 +617,11 @@ export default function ReportsPage() {
             {/* Legend for reference line */}
             <div className="flex items-center justify-center gap-6 mt-4 text-xs md:text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-1 bg-indigo-500 rounded" />
+                <div className="w-4 h-1 bg-[#4a9473] rounded" />
                 <span className="text-gray-600">Your Savings Rate</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-1 bg-green-500 rounded" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #22c55e 0, #22c55e 4px, transparent 4px, transparent 8px)' }} />
+                <div className="w-4 h-1 bg-[#4a9473]/30 rounded" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #4a9473 0, #4a9473 4px, transparent 4px, transparent 8px)' }} />
                 <span className="text-gray-600">Recommended (20%)</span>
               </div>
             </div>
@@ -633,20 +629,6 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Mobile Month Selector - Fixed at bottom */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-20">
-        <div className="flex items-center gap-3">
-          <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
-          <input
-            type="month"
-            value={currentMonth}
-            onChange={(e) => handleMonthChange(e.target.value)}
-            className="flex-1 h-10 px-3 text-sm rounded-lg border border-gray-300
-              bg-white appearance-none touch-target
-              focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-          />
-        </div>
-      </div>
     </div>
   );
 }

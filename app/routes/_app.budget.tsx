@@ -11,8 +11,8 @@ import { Input } from '@app/components/ui/Input';
 import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
 import { Plus, Target, Calendar, TrendingUp, Wallet, AlertCircle } from 'lucide-react';
 import type { Budget, Category } from '@db/schema';
-import { listCategories } from '@server/lib/services/categories';
-import { listBudgetsWithSpending, deleteBudget } from '@server/lib/services/budgets';
+import { listCategories } from '@server/lib/services/categories.server';
+import { listBudgetsWithSpending, deleteBudget } from '@server/lib/services/budgets.server';
 
 export const meta: MetaFunction = () => {
   return [
@@ -145,8 +145,8 @@ export default function BudgetPage() {
       <div className="flex flex-col gap-4 md:gap-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Budget</h1>
-            <p className="text-xs md:text-sm text-gray-500 mt-0.5">
+            <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] tracking-tight">Budget</h1>
+            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-0.5">
               Track spending limits
               <span className="hidden sm:inline text-gray-400 ml-2">(Cmd/Ctrl+N to add new)</span>
             </p>
@@ -162,8 +162,8 @@ export default function BudgetPage() {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-2">
+        <div className="glass-card p-4">
+          <label className="flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] mb-2">
             <Calendar className="w-4 h-4" />
             Select Month
           </label>
@@ -175,40 +175,40 @@ export default function BudgetPage() {
           />
         </div>
         
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+        <div className="glass-card p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-              <Target className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+              <Target className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-blue-700">Total Budgeted</p>
-              <p className="text-xl font-bold text-blue-800">${summary.totalBudgeted.toLocaleString()}</p>
+              <p className="text-sm font-medium text-[var(--text-secondary)]">Total Budgeted</p>
+              <p className="text-xl font-bold text-[var(--text-primary)]">${summary.totalBudgeted.toLocaleString()}</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+        <div className="glass-card p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-red-600" />
+            <div className="w-10 h-10 rounded-lg bg-rose-500/20 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-rose-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-red-700">Total Spent</p>
-              <p className="text-xl font-bold text-red-800">${summary.totalSpent.toLocaleString()}</p>
+              <p className="text-sm font-medium text-[var(--text-secondary)]">Total Spent</p>
+              <p className="text-xl font-bold text-[var(--text-primary)]">${summary.totalSpent.toLocaleString()}</p>
             </div>
           </div>
         </div>
         
-        <div className={`${summary.totalRemaining >= 0 ? 'bg-green-50 border-green-100' : 'bg-orange-50 border-orange-100'} border rounded-xl p-4`}>
+        <div className="glass-card p-4">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${summary.totalRemaining >= 0 ? 'bg-green-100' : 'bg-orange-100'}`}>
-              <Wallet className={`w-5 h-5 ${summary.totalRemaining >= 0 ? 'text-green-600' : 'text-orange-600'}`} />
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${summary.totalRemaining >= 0 ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
+              <Wallet className={`w-5 h-5 ${summary.totalRemaining >= 0 ? 'text-emerald-500' : 'text-rose-500'}`} />
             </div>
             <div>
-              <p className={`text-sm font-medium ${summary.totalRemaining >= 0 ? 'text-green-700' : 'text-orange-700'}`}>
+              <p className={`text-sm font-medium ${summary.totalRemaining >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                 {summary.totalRemaining >= 0 ? 'Remaining' : 'Over Budget'}
               </p>
-              <p className={`text-xl font-bold ${summary.totalRemaining >= 0 ? 'text-green-800' : 'text-orange-800'}`}>
+              <p className={`text-xl font-bold text-[var(--text-primary)]`}>
                 ${Math.abs(summary.totalRemaining).toLocaleString()}
               </p>
             </div>
@@ -245,8 +245,8 @@ export default function BudgetPage() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 flex items-center justify-center">
               <Target className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No budgets set</h3>
-            <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No budgets set</h3>
+            <p className="text-[var(--text-secondary)] mb-6 max-w-sm mx-auto">
               Start tracking your spending by setting budget limits for your expense categories.
             </p>
             <Button onClick={() => setIsModalOpen(true)}>
@@ -298,7 +298,6 @@ export default function BudgetPage() {
                           percentageUsed: 0,
                           userId: '',
                           createdAt: new Date(),
-                          updatedAt: new Date(),
                         } as BudgetWithSpending);
                         setIsModalOpen(true);
                       }}
@@ -308,7 +307,7 @@ export default function BudgetPage() {
                           {category.icon && <span className="text-2xl">{category.icon}</span>}
                           <div>
                             <h3 className="font-semibold text-gray-700">{category.label}</h3>
-                            <p className="text-sm text-gray-500">No limit set</p>
+                            <p className="text-sm text-[var(--text-secondary)]">No limit set</p>
                           </div>
                         </div>
                         <Plus className="w-5 h-5 text-gray-400" />
@@ -339,7 +338,7 @@ export default function BudgetPage() {
       >
         <BudgetForm
           budget={editingBudget}
-          categories={expenseCategories}
+          categories={expenseCategories as any}
           currentMonth={currentMonth}
           onSuccess={() => {
             setIsModalOpen(false);

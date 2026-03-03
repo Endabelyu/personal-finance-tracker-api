@@ -1,43 +1,45 @@
 import { useState } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router';
+import { Link, useSearchParams, Form, useActionData, useNavigation, redirect, type ClientActionFunctionArgs } from 'react-router';
 import { authClient } from '@app/lib/auth-client';
 import { Button } from '@app/components/ui/Button';
 import { Input } from '@app/components/ui/Input';
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 
+export async function clientAction({ request }: ClientActionFunctionArgs) {
+  const formData = await request.formData();
+  const email = String(formData.get('email') || '');
+  const password = String(formData.get('password') || '');
+
+  if (!email || !password) {
+    return { error: 'Email and password are required' };
+  }
+
+  try {
+    const result = await authClient.signIn.email({
+      email,
+      password,
+    });
+    
+    if (result.error) {
+      return { error: result.error.message || 'Invalid email or password' };
+    }
+    
+    return redirect('/');
+  } catch (err) {
+    return { error: 'An unexpected error occurred' };
+  }
+}
+
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  
+  const actionData = useActionData<typeof clientAction>();
+  const navigation = useNavigation();
+  const isLoading = navigation.state !== 'idle';
   
   const registered = searchParams.get('registered') === 'true';
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-    
-    try {
-      const result = await authClient.signIn.email({
-        email,
-        password,
-      });
-      
-      if (result.error) {
-        setError(result.error.message || 'Invalid email or password');
-      } else {
-        navigate('/');
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const error = actionData?.error;
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
@@ -75,7 +77,7 @@ export default function LoginPage() {
           </div>
         )}
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <Form method="post" className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -89,8 +91,6 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
                   placeholder="you@example.com"
                 />
@@ -109,8 +109,6 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-10"
                   placeholder="••••••••"
                 />
@@ -152,7 +150,7 @@ export default function LoginPage() {
           >
             {isLoading ? 'Signing in...' : 'Sign in'}
           </Button>
-        </form>
+        </Form>
       </div>
     </div>
   );

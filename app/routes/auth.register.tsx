@@ -1,54 +1,54 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, Form, useActionData, useNavigation, redirect, type ClientActionFunctionArgs } from 'react-router';
 import { authClient } from '@app/lib/auth-client';
 import { Button } from '@app/components/ui/Button';
 import { Input } from '@app/components/ui/Input';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
 
-export default function RegisterPage() {
-  const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+export async function clientAction({ request }: ClientActionFunctionArgs) {
+  const formData = await request.formData();
+  const name = String(formData.get('name') || '');
+  const email = String(formData.get('email') || '');
+  const password = String(formData.get('password') || '');
+  const confirmPassword = String(formData.get('confirm-password') || '');
+
+  if (!name || !email || !password || !confirmPassword) {
+    return { error: 'All fields are required' };
+  }
+
+  if (password !== confirmPassword) {
+    return { error: 'Passwords do not match' };
+  }
   
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  if (password.length < 8) {
+    return { error: 'Password must be at least 8 characters' };
+  }
+
+  try {
+    const result = await authClient.signUp.email({
+      email,
+      password,
+      name,
+    });
     
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
+    if (result.error) {
+      return { error: result.error.message || 'Failed to create account' };
     }
     
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      const result = await authClient.signUp.email({
-        email,
-        password,
-        name,
-      });
-      
-      if (result.error) {
-        setError(result.error.message || 'Failed to create account');
-      } else {
-        navigate('/auth/login?registered=true');
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    return redirect('/auth/login?registered=true');
+  } catch (err) {
+    return { error: 'An unexpected error occurred' };
+  }
+}
+
+export default function RegisterPage() {
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const actionData = useActionData<typeof clientAction>();
+  const navigation = useNavigation();
+  const isLoading = navigation.state !== 'idle';
+  
+  const error = actionData?.error;
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
@@ -74,7 +74,7 @@ export default function RegisterPage() {
           </div>
         )}
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <Form method="post" className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -88,8 +88,6 @@ export default function RegisterPage() {
                   type="text"
                   autoComplete="name"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
                   className="pl-10"
                   placeholder="John Doe"
                 />
@@ -108,8 +106,6 @@ export default function RegisterPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
                   placeholder="you@example.com"
                 />
@@ -128,8 +124,6 @@ export default function RegisterPage() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-10"
                   placeholder="••••••••"
                 />
@@ -155,8 +149,6 @@ export default function RegisterPage() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
                   className="pl-10"
                   placeholder="••••••••"
                 />
@@ -182,7 +174,7 @@ export default function RegisterPage() {
               Privacy Policy
             </Link>
           </p>
-        </form>
+        </Form>
       </div>
     </div>
   );

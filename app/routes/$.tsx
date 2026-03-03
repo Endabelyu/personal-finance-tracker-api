@@ -51,7 +51,7 @@ export default function NotFoundPage() {
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
             <Link
-              to="/dashboard"
+              to="/"
               className={`${primaryStyles} ${lgSize}`}
             >
               <Home className="w-5 h-5 mr-2" aria-hidden="true" />
@@ -80,7 +80,7 @@ export default function NotFoundPage() {
         {/* Helpful links section */}
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Link
-            to="/dashboard"
+            to="/"
             className="bg-white rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-shadow group"
           >
             <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-green-100 flex items-center justify-center group-hover:scale-110 transition-transform">

@@ -1,5 +1,5 @@
 import '../styles/animations.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from 'react-router';
 import { useLoaderData, useSearchParams, useNavigation, useFetcher } from 'react-router';
 import { requireSession } from '@app/lib/auth.server';
@@ -10,9 +10,9 @@ import { Button } from '@app/components/ui/Button';
 import { Input } from '@app/components/ui/Input';
 import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
 import { Plus, Search, Filter, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
-import type { Transaction, Category } from '@db/schema';
-import { listCategories } from '@server/lib/services/categories';
-import { listTransactions, deleteTransaction } from '@server/lib/services/transactions';
+import type { Transaction, Category } from '@app/types';
+import { listCategories } from '@server/lib/services/categories.server';
+import { listTransactions, deleteTransaction } from '@server/lib/services/transactions.server';
 
 export const meta: MetaFunction = () => {
   return [
@@ -132,6 +132,21 @@ export default function TransactionsPage() {
     },
   ]);
   
+  useEffect(() => {
+    if (searchParams.get('new') === 'true') {
+      setIsModalOpen(true);
+      // Remove it from URL without causing navigation jump
+      setSearchParams(
+        prev => {
+          const newParams = new URLSearchParams(prev);
+          newParams.delete('new');
+          return newParams;
+        },
+        { replace: true }
+      );
+    }
+  }, [searchParams, setSearchParams]);
+  
   const updateFilters = (updates: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams);
     Object.entries(updates).forEach(([key, value]) => {
@@ -167,13 +182,13 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:gap-6">
+      <div className="hidden md:flex flex-col gap-4 md:gap-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Transactions</h1>
-            <p className="text-xs md:text-sm text-gray-500 mt-0.5">
+            <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] tracking-tight">Transactions</h1>
+            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-0.5">
               Manage your income and expenses
-              <span className="hidden sm:inline text-gray-400 ml-2">(Cmd/Ctrl+N to add new)</span>
+              <span className="hidden sm:inline opacity-60 ml-2">(Cmd/Ctrl+N to add new)</span>
             </p>
           </div>
           <Button
@@ -188,36 +203,36 @@ export default function TransactionsPage() {
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-green-50 border border-green-100 rounded-xl p-4">
+        <div className="glass-card p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-green-600" />
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-emerald-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-green-700">Income</p>
-              <p className="text-xl font-bold text-green-800">${totals.income.toFixed(2)}</p>
+              <p className="text-sm font-medium text-[var(--text-secondary)]">Income</p>
+              <p className="text-xl font-bold text-[var(--text-primary)]">${totals.income.toFixed(2)}</p>
             </div>
           </div>
         </div>
-        <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+        <div className="glass-card p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
-              <TrendingDown className="w-5 h-5 text-red-600" />
+            <div className="w-10 h-10 rounded-lg bg-rose-500/20 flex items-center justify-center">
+              <TrendingDown className="w-5 h-5 text-rose-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-red-700">Expenses</p>
-              <p className="text-xl font-bold text-red-800">${totals.expense.toFixed(2)}</p>
+              <p className="text-sm font-medium text-[var(--text-secondary)]">Expenses</p>
+              <p className="text-xl font-bold text-[var(--text-primary)]">${totals.expense.toFixed(2)}</p>
             </div>
           </div>
         </div>
-        <div className={`${netAmount >= 0 ? 'bg-blue-50 border-blue-100' : 'bg-orange-50 border-orange-100'} border rounded-xl p-4`}>
+        <div className="glass-card p-5">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${netAmount >= 0 ? 'bg-blue-100' : 'bg-orange-100'}`}>
-              <Wallet className={`w-5 h-5 ${netAmount >= 0 ? 'text-blue-600' : 'text-orange-600'}`} />
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-[var(--text-primary)]/10`}>
+              <Wallet className={`w-5 h-5 text-[var(--text-primary)]`} />
             </div>
             <div>
-              <p className={`text-sm font-medium ${netAmount >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>Net</p>
-              <p className={`text-xl font-bold ${netAmount >= 0 ? 'text-blue-800' : 'text-orange-800'}`}>${Math.abs(netAmount).toFixed(2)}</p>
+              <p className="text-sm font-medium text-[var(--text-secondary)]">Net</p>
+              <p className="text-xl font-bold text-[var(--text-primary)]">${Math.abs(netAmount).toFixed(2)}</p>
             </div>
           </div>
         </div>
@@ -226,7 +241,7 @@ export default function TransactionsPage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
           <Input
             type="text"
             placeholder="Search transactions..."
@@ -238,7 +253,7 @@ export default function TransactionsPage() {
         <select
           value={currentType}
           onChange={(e) => updateFilters({ type: e.target.value })}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          className="px-3 py-2 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)]"
         >
           <option value="">All Types</option>
           <option value="income">Income</option>
@@ -247,27 +262,27 @@ export default function TransactionsPage() {
         <select
           value={currentCategory}
           onChange={(e) => updateFilters({ category: e.target.value })}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          className="px-3 py-2 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)]"
         >
           <option value="">All Categories</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>{c.label}</option>
           ))}
         </select>
-        <Input
+        <input
           type="month"
           value={currentMonth}
           onChange={(e) => updateFilters({ month: e.target.value })}
-          className="w-auto"
+          className="px-3 py-2 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)]"
         />
       </div>
       
       {/* Transactions List */}
       <div className="space-y-3">
         {transactions.length === 0 ? (
-          <div className="text-center py-16 px-4 bg-white rounded-xl border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No transactions found</h3>
-            <p className="text-gray-500 mb-6">Get started by adding your first transaction.</p>
+          <div className="text-center py-16 px-4 glass-card">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No transactions found</h3>
+            <p className="text-[var(--text-secondary)] mb-6">Get started by adding your first transaction.</p>
             <Button onClick={() => setIsModalOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Transaction
@@ -295,7 +310,7 @@ export default function TransactionsPage() {
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-[var(--text-secondary)]">
                   Page {pagination.page} of {pagination.totalPages}
                 </span>
                 <Button
@@ -335,13 +350,6 @@ export default function TransactionsPage() {
         />
       </Modal>
       
-      {/* Mobile FAB */}
-      <Button
-        onClick={() => setIsModalOpen(true)}
-        className="md:hidden fixed bottom-20 right-4 z-30 h-14 w-14 rounded-full shadow-lg shadow-blue-500/30"
-      >
-        <Plus className="w-6 h-6" />
-      </Button>
     </div>
   );
 }
