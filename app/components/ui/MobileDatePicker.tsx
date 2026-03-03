@@ -268,7 +268,7 @@ export function MobileDatePicker({
             {/* Quick selections */}
             <div className="border-t border-gray-100 p-4 space-y-2">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Quick Select</p>
-              <div className="flex gap-2 overflow-x-auto pb-safe">
+              <div className="flex gap-2 overflow-x-auto pb-safe no-scrollbar">
                 {['Today', 'Tomorrow', 'Next Week', 'Next Month'].map((label) => {
                   let date = new Date();
                   if (label === 'Tomorrow') date.setDate(date.getDate() + 1);

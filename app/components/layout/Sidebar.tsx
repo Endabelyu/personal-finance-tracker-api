@@ -48,7 +48,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
     : user?.email?.[0].toUpperCase() || '?';
 
-  const ThemeIcon = mounted && effectiveTheme === 'dark' ? Sun : Moon;
+  const isDark = ['midnight-blue', 'warm-charcoal', 'deep-purple'].includes(effectiveTheme);
+  const ThemeIcon = mounted && isDark ? Sun : Moon;
 
   // Handle swipe to close
   useEffect(() => {

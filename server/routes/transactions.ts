@@ -5,7 +5,8 @@ import { z } from 'zod';
 import { eq, and, like, desc, sql, SQL } from 'drizzle-orm';
 import { db } from '@server/lib/db';
 import { transactions, categories } from '@db/schema';
-import { requireAuth } from '@server/lib/auth-middleware';
+import { requireAuth } from '@server/lib/auth-middleware.server';
+import { writeLimiter, readLimiter } from '@server/lib/rate-limit';
 
 const app = new Hono();
 
@@ -14,7 +15,7 @@ const listQuerySchema = z.object({
   month: z.string().regex(/^\d{4}-\d{2}$/).optional(),
   type: z.enum(['income', 'expense']).optional(),
   category: z.string().optional(),
-  search: z.string().optional(),
+  search: z.string().max(100).trim().optional(),
   page: z.string().transform(Number).default('1'),
   limit: z.string().transform(Number).default('20'),
 });
@@ -46,6 +47,11 @@ const updateSchema = z.object({
 
 // Apply auth middleware to all routes
 app.use('*', requireAuth);
+// Rate limiting
+app.use('GET /*', readLimiter);
+app.use('POST /*', writeLimiter);
+app.use('PUT /*', writeLimiter);
+app.use('DELETE /*', writeLimiter);
 
 // GET /api/transactions - List with filters
 app.get('/', zValidator('query', listQuerySchema), async (c) => {
@@ -60,9 +66,10 @@ app.get('/', zValidator('query', listQuerySchema), async (c) => {
 
   if (query.month) {
     const startDate = `${query.month}-01`;
-    const endDate = `${query.month}-31`;
+    const [yr, mo] = query.month.split('-');
+    const endDate = new Date(Number(yr), Number(mo), 1).toISOString().slice(0, 10); // exclusive
     conditions.push(
-      sql`${transactions.date} >= ${startDate} AND ${transactions.date} <= ${endDate}`
+      sql`${transactions.date} >= ${startDate}::date AND ${transactions.date} < ${endDate}::date`
     );
   }
 

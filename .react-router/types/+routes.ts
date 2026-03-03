@@ -23,6 +23,9 @@ type Pages = {
   "/auth/logout": {
     params: {};
   };
+  "/auth/forgot-password": {
+    params: {};
+  };
   "/transactions": {
     params: {};
   };
@@ -32,8 +35,19 @@ type Pages = {
   "/reports": {
     params: {};
   };
+  "/profile": {
+    params: {};
+  };
+  "/settings": {
+    params: {};
+  };
   "/walkthrough": {
     params: {};
+  };
+  "/api/*": {
+    params: {
+      "*": string;
+    };
   };
   "/*": {
     params: {
@@ -45,7 +59,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/auth/login" | "/auth/register" | "/auth/logout" | "/transactions" | "/budget" | "/reports" | "/walkthrough" | "/*";
+    page: "/" | "/auth/login" | "/auth/register" | "/auth/logout" | "/auth/forgot-password" | "/transactions" | "/budget" | "/reports" | "/profile" | "/settings" | "/walkthrough" | "/api/*" | "/*";
   };
   "routes/auth.login.tsx": {
     id: "routes/auth.login";
@@ -59,9 +73,13 @@ type RouteFiles = {
     id: "routes/auth.logout";
     page: "/auth/logout";
   };
+  "routes/auth.forgot-password.tsx": {
+    id: "routes/auth.forgot-password";
+    page: "/auth/forgot-password";
+  };
   "routes/_app.tsx": {
     id: "routes/_app";
-    page: "/" | "/transactions" | "/budget" | "/reports" | "/walkthrough";
+    page: "/" | "/transactions" | "/budget" | "/reports" | "/profile" | "/settings";
   };
   "routes/_app.dashboard.tsx": {
     id: "routes/_app.dashboard";
@@ -79,9 +97,21 @@ type RouteFiles = {
     id: "routes/_app.reports";
     page: "/reports";
   };
+  "routes/_app.profile.tsx": {
+    id: "routes/_app.profile";
+    page: "/profile";
+  };
+  "routes/_app.settings.tsx": {
+    id: "routes/_app.settings";
+    page: "/settings";
+  };
   "routes/walkthrough.tsx": {
     id: "routes/walkthrough";
     page: "/walkthrough";
+  };
+  "routes/api.$.tsx": {
+    id: "routes/api.$";
+    page: "/api/*";
   };
   "routes/$.tsx": {
     id: "routes/$";
@@ -94,11 +124,15 @@ type RouteModules = {
   "routes/auth.login": typeof import("./app/routes/auth.login.tsx");
   "routes/auth.register": typeof import("./app/routes/auth.register.tsx");
   "routes/auth.logout": typeof import("./app/routes/auth.logout.tsx");
+  "routes/auth.forgot-password": typeof import("./app/routes/auth.forgot-password.tsx");
   "routes/_app": typeof import("./app/routes/_app.tsx");
   "routes/_app.dashboard": typeof import("./app/routes/_app.dashboard.tsx");
   "routes/_app.transactions": typeof import("./app/routes/_app.transactions.tsx");
   "routes/_app.budget": typeof import("./app/routes/_app.budget.tsx");
   "routes/_app.reports": typeof import("./app/routes/_app.reports.tsx");
+  "routes/_app.profile": typeof import("./app/routes/_app.profile.tsx");
+  "routes/_app.settings": typeof import("./app/routes/_app.settings.tsx");
   "routes/walkthrough": typeof import("./app/routes/walkthrough.tsx");
+  "routes/api.$": typeof import("./app/routes/api.$.tsx");
   "routes/$": typeof import("./app/routes/$.tsx");
 };

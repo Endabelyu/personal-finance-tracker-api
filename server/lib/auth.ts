@@ -14,6 +14,9 @@ export const auth = betterAuth({
       verification: schema.verification
     },
   }),
+  baseURL: process.env.NODE_ENV === 'production' 
+    ? process.env.BETTER_AUTH_URL 
+    : 'http://localhost:5173',
   emailAndPassword: {
     enabled: true,
   },
@@ -21,8 +24,11 @@ export const auth = betterAuth({
     'https://personal-finance-tracker.endabelyu.com',
     'http://personal-finance-tracker.endabelyu.com',
     'http://localhost:3005',
-    'http://localhost:3002'
+    'http://localhost:3002',
+    'http://localhost:5174',
+    'http://localhost:5173',
   ]
+
 });
 
 export const requireAuth: MiddlewareHandler = async (c, next) => {

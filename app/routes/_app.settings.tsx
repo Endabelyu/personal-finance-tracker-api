@@ -74,27 +74,71 @@ export default function SettingsPage() {
       <div className="glass-card rounded-[2rem] border border-[var(--card-border)] overflow-hidden">
         <SectionHeader title="Tampilan" />
         <div className="px-5 pb-4 pt-2">
-          <p className="text-xs text-slate-500 mb-3">Tema Warna</p>
-          <div className="grid grid-cols-3 gap-2">
-            {([
-              { value: 'light', icon: Sun, label: 'Terang' },
-              { value: 'dark', icon: Moon, label: 'Gelap' },
-              { value: 'system', icon: Monitor, label: 'Sistem' },
-            ] as const).map(({ value, icon: Icon, label }) => (
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs text-[var(--text-secondary)] mb-2 font-semibold">Mode Terang</p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'fresh-mint', icon: Sun, label: 'Fresh Mint' },
+                  { value: 'candy-pop', icon: Sun, label: 'Candy Pop' },
+                  { value: 'sunny-yellow', icon: Sun, label: 'Sunny Yellow' },
+                ].map(({ value, icon: Icon, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setTheme(value as any)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
+                      theme === value
+                        ? 'border-[var(--text-primary)] bg-[var(--text-primary)]/10 text-[var(--text-primary)]'
+                        : 'border-[var(--card-border)] text-[var(--text-secondary)] hover:border-[var(--text-primary)]/40 hover:bg-[var(--text-primary)]/5'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="text-[10px] font-semibold text-center leading-tight">{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs text-[var(--text-secondary)] mb-2 font-semibold">Mode Gelap</p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'midnight-blue', icon: Moon, label: 'Midnight Blue' },
+                  { value: 'warm-charcoal', icon: Moon, label: 'Warm Charcoal' },
+                  { value: 'deep-purple', icon: Moon, label: 'Deep Purple' },
+                ].map(({ value, icon: Icon, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setTheme(value as any)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
+                      theme === value
+                        ? 'border-[var(--text-primary)] bg-[var(--text-primary)]/10 text-[var(--text-primary)]'
+                        : 'border-[var(--card-border)] text-[var(--text-secondary)] hover:border-[var(--text-primary)]/40 hover:bg-[var(--text-primary)]/5'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="text-[10px] font-semibold text-center leading-tight">{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
               <button
-                key={value}
                 type="button"
-                onClick={() => setTheme(value)}
-                className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
-                  theme === value
+                onClick={() => setTheme('system')}
+                className={`w-full flex items-center justify-center gap-3 p-3 rounded-2xl border transition-all ${
+                  theme === 'system'
                     ? 'border-[var(--text-primary)] bg-[var(--text-primary)]/10 text-[var(--text-primary)]'
                     : 'border-[var(--card-border)] text-[var(--text-secondary)] hover:border-[var(--text-primary)]/40 hover:bg-[var(--text-primary)]/5'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-xs font-semibold">{label}</span>
+                <Monitor className="w-5 h-5" />
+                <span className="text-sm font-semibold">Sistem Default</span>
               </button>
-            ))}
+            </div>
           </div>
         </div>
       </div>

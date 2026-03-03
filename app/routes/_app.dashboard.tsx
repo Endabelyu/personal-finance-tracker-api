@@ -305,12 +305,12 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-white/70 flex items-center gap-1">
+          <p className="text-sm font-medium text-[var(--text-secondary)] flex items-center gap-1">
             Selamat pagi <span className="text-lg">👋</span>
           </p>
-          <h1 className="text-2xl font-bold text-white mt-0.5">{firstName}</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] mt-0.5">{firstName}</h1>
         </div>
-        <Link to="/profile" className="w-12 h-12 rounded-full glass-card flex items-center justify-center text-2xl shadow-inner cursor-pointer hover:border-white/30 transition-colors">
+        <Link to="/profile" className="w-12 h-12 rounded-full glass-card flex items-center justify-center text-2xl shadow-inner cursor-pointer hover:border-[var(--text-primary)]/30 transition-colors">
           😎
         </Link>
       </div>
@@ -341,81 +341,81 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <div className="grid grid-cols-4 gap-3 pt-2">
         {[
-          { label: 'Keluar', icon: TrendingDown, color: 'text-emerald-400', route: '/transactions?new=true&type=expense' },
-          { label: 'Masuk', icon: TrendingUp, color: 'text-amber-400', route: '/transactions?new=true&type=income' },
-          { label: 'Transfer', icon: ArrowRight, color: 'text-blue-400', route: '/transactions' },
-          { label: 'Laporan', icon: Receipt, color: 'text-rose-400', route: '/reports' },
+          { label: 'Keluar', icon: TrendingDown, color: 'text-[var(--gradient-danger-start)]', route: '/transactions?new=true&type=expense' },
+          { label: 'Masuk', icon: TrendingUp, color: 'text-[var(--gradient-success-start)]', route: '/transactions?new=true&type=income' },
+          { label: 'Transfer', icon: ArrowRight, color: 'text-[var(--gradient-hero-start)]', route: '/transactions' },
+          { label: 'Laporan', icon: Receipt, color: 'text-[var(--text-secondary)]', route: '/reports' },
         ].map(action => (
           <Link key={action.label} to={action.route} className="flex flex-col items-center gap-2">
             <div className="w-14 h-14 md:w-16 md:h-16 rounded-[1.25rem] glass-card flex items-center justify-center hover:scale-105 transition-transform">
               <action.icon className={`w-6 h-6 ${action.color}`} strokeWidth={2.5} />
             </div>
-            <span className="text-[11px] font-semibold text-white/80">{action.label}</span>
+            <span className="text-[11px] font-semibold text-[var(--text-secondary)]">{action.label}</span>
           </Link>
         ))}
       </div>
 
-      {/* Akun Saya (Mocked for visual parity with design) */}
+      {/* Akun Saya */}
       <div className="pt-2">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-white">Akun Saya</h3>
-          <Link to="/profile" className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors">
+          <h3 className="text-base font-bold text-[var(--text-primary)]">Akun Saya</h3>
+          <Link to="/profile" className="text-xs font-semibold text-[var(--gradient-hero-start)] opacity-80 hover:opacity-100 transition-opacity">
             + Tambah
           </Link>
         </div>
         
-        <div className="flex overflow-x-auto gap-3 pb-4 snap-x -mx-4 px-4 scrollbar-hide">
-          <div className="glass-card p-4 min-w-[140px] snap-center flex-shrink-0 border-blue-400/30">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2">
-              <Wallet className="w-3 h-3 text-blue-400" /> BCA
+        <div className="flex overflow-x-auto gap-3 pb-4 snap-x -mx-4 px-4 no-scrollbar">
+          <div className="glass-card p-4 min-w-[140px] snap-center flex-shrink-0 border-[var(--gradient-hero-start)]">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+              <Wallet className="w-3 h-3 text-[var(--gradient-hero-start)]" /> BCA
             </div>
-            <p className="text-lg font-bold text-blue-400">5.200.000</p>
-            <p className="text-[10px] text-white/50">Tabungan</p>
+            <p className="text-lg font-bold text-[var(--gradient-hero-start)]">5.200.000</p>
+            <p className="text-[10px] text-[var(--text-secondary)] opacity-80">Tabungan</p>
           </div>
           
           <div className="glass-card p-4 min-w-[140px] snap-center flex-shrink-0">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2">
-              <Wallet className="w-3 h-3 text-slate-400" /> Mandiri
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+              <Wallet className="w-3 h-3 text-[var(--text-secondary)]" /> Mandiri
             </div>
-            <p className="text-lg font-bold text-white">2.100.000</p>
-            <p className="text-[10px] text-white/50">Gaji</p>
+            <p className="text-lg font-bold text-[var(--text-primary)]">2.100.000</p>
+            <p className="text-[10px] text-[var(--text-secondary)] opacity-80">Gaji</p>
           </div>
           
           <div className="glass-card p-4 min-w-[140px] snap-center flex-shrink-0">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2">
-              <Wallet className="w-3 h-3 text-emerald-400" /> Cash
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+              <Wallet className="w-3 h-3 text-[var(--gradient-success-start)]" /> Cash
             </div>
-            <p className="text-lg font-bold text-white">1.150.000</p>
-            <p className="text-[10px] text-white/50">Dompet</p>
+            <p className="text-lg font-bold text-[var(--text-primary)]">1.150.000</p>
+            <p className="text-[10px] text-[var(--text-secondary)] opacity-80">Dompet</p>
           </div>
         </div>
       </div>
 
       {/* Banner Insight */}
       <div className="glass-card p-4 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl flex-shrink-0 border border-white/10">
+        <div className="w-10 h-10 rounded-xl bg-[var(--text-primary)]/5 flex items-center justify-center text-xl flex-shrink-0 border border-[var(--card-border)]">
           🤖
         </div>
-        <p className="text-[11px] leading-relaxed text-white/80">
-          Kamu <span className="text-blue-400 font-bold">hemat 15%</span> buat makan bulan ini! Tapi transport naik 22% 👀
+        <p className="text-[11px] leading-relaxed text-[var(--text-secondary)]">
+          Kamu <span className="text-[var(--gradient-hero-start)] font-bold">hemat 15%</span> buat makan bulan ini! Tapi transport naik 22% 👀
         </p>
       </div>
 
       {/* Terbaru */}
       <div className="pt-2">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-white">Terbaru</h3>
-          <Link to="/transactions" className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+          <h3 className="text-base font-bold text-[var(--text-primary)]">Terbaru</h3>
+          <Link to="/transactions" className="text-xs font-semibold text-[var(--gradient-hero-start)] opacity-80 hover:opacity-100 transition-opacity flex items-center gap-1">
             Lihat Semua <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
         
         {recentTransactions.length === 0 ? (
           <div className="glass-card p-6 text-center">
-            <p className="text-sm text-white/60">No transactions recorded yet.</p>
+            <p className="text-sm text-[var(--text-secondary)]">No transactions recorded yet.</p>
           </div>
         ) : (
-          <div className="glass-card divide-y divide-white/5">
+          <div className="glass-card divide-y divide-[var(--text-primary)]/10">
             {recentTransactions.map((transaction) => {
               const category = categories.find((c) => c.id === transaction.categoryId);
               return (

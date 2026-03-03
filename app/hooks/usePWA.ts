@@ -50,7 +50,8 @@ export interface PWAActions {
 export function usePWA(): PWAState & PWAActions {
   const [isInstallable, setIsInstallable] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  // Initialize to false (safe for SSR) — real value synced in useEffect below
+  const [isOffline, setIsOffline] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [swRegistered, setSwRegistered] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -97,8 +98,11 @@ export function usePWA(): PWAState & PWAActions {
     };
   }, []);
 
-  // Listen for online/offline events
+  // Sync actual online/offline state after mount (avoids SSR / hydration mismatch)
   useEffect(() => {
+    // Set real value now that we're on the client
+    setIsOffline(!navigator.onLine);
+
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
 
@@ -113,16 +117,23 @@ export function usePWA(): PWAState & PWAActions {
 
   // Check service worker registration
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then(() => {
-        setSwRegistered(true);
-      });
+    if (!('serviceWorker' in navigator)) return;
 
-      // Listen for updates
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        setUpdateAvailable(true);
-      });
-    }
+    let active = true;
+    const handleControllerChange = () => {
+      if (active) setUpdateAvailable(true);
+    };
+
+    navigator.serviceWorker.ready.then(() => {
+      if (active) setSwRegistered(true);
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+
+    return () => {
+      active = false;
+      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+    };
   }, []);
 
   // Check notification permission

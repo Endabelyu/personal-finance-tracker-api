@@ -83,6 +83,9 @@ export async function getMonthlyTrend(userId: string, months = 6) {
     monthsList.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
   }
 
+  // Build a full date string so Drizzle passes it as a single typed parameter
+  const startDate = `${monthsList[0]}-01`;
+
   const monthlyData = await db
     .select({
       month: sql<string>`to_char(${transactions.date}, 'YYYY-MM')`,
@@ -92,7 +95,7 @@ export async function getMonthlyTrend(userId: string, months = 6) {
     .from(transactions)
     .where(and(
       eq(transactions.userId, userId),
-      sql`${transactions.date} >= ${monthsList[0]}-01`
+      sql`${transactions.date} >= ${startDate}::date`
     ))
     .groupBy(sql`to_char(${transactions.date}, 'YYYY-MM')`, transactions.type)
     .orderBy(sql`to_char(${transactions.date}, 'YYYY-MM')`);

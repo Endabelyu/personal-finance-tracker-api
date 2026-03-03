@@ -44,7 +44,7 @@ function SettingRow({ icon: Icon, label, description, onClick, href, danger }: S
     </>
   );
 
-  const cls = `w-full flex items-center gap-4 px-5 py-4 hover:bg-black/5 transition-colors ${danger ? 'text-red-500' : 'text-[var(--text-primary)]'}`;
+  const cls = `w-full flex items-center gap-4 px-5 py-4 hover:bg-[var(--text-primary)]/5 transition-colors ${danger ? 'text-red-500' : 'text-[var(--text-primary)]'}`;
 
   if (href) return <Link to={href} className={cls}>{inner}</Link>;
   return <button type="button" onClick={onClick} className={cls}>{inner}</button>;
@@ -83,11 +83,11 @@ export default function ProfilePage() {
       </div>
 
       {/* Account Settings */}
-      <div className="bg-white rounded-[2rem] border border-[var(--card-border)] overflow-hidden">
+      <div className="glass-card rounded-[2rem] border border-[var(--card-border)] overflow-hidden">
         <div className="px-5 pt-4 pb-1">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Akun</p>
+          <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest">Akun</p>
         </div>
-        <div className="divide-y divide-black/5">
+        <div className="divide-y divide-[var(--text-primary)]/5">
           <SettingRow icon={User} label="Edit Profil" description="Ubah nama dan foto profil" onClick={() => alert('Fitur ini akan segera hadir!')} />
           <SettingRow icon={Bell} label="Notifikasi" description="Atur preferensi pemberitahuan" onClick={() => alert('Fitur ini akan segera hadir!')} />
           <SettingRow icon={Shield} label="Keamanan" description="Ubah kata sandi" onClick={() => alert('Fitur ini akan segera hadir!')} />
@@ -95,18 +95,18 @@ export default function ProfilePage() {
       </div>
 
       {/* App Settings */}
-      <div className="bg-white rounded-[2rem] border border-[var(--card-border)] overflow-hidden">
+      <div className="glass-card rounded-[2rem] border border-[var(--card-border)] overflow-hidden">
         <div className="px-5 pt-4 pb-1">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Preferensi</p>
+          <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest">Preferensi</p>
         </div>
-        <div className="divide-y divide-black/5">
+        <div className="divide-y divide-[var(--text-primary)]/5">
           <SettingRow icon={Moon} label="Pengaturan Tema" description="Terang / Gelap / Sistem" href="/settings" />
           <SettingRow icon={Download} label="Ekspor Data" description="Unduh data transaksi sebagai CSV" onClick={() => alert('Fitur ini akan segera hadir!')} />
         </div>
       </div>
 
       {/* Logout */}
-      <div className="bg-white rounded-[2rem] border border-[var(--card-border)] overflow-hidden">
+      <div className="glass-card rounded-[2rem] border border-[var(--card-border)] overflow-hidden">
         <SettingRow
           icon={LogOut}
           label="Keluar"
@@ -115,7 +115,7 @@ export default function ProfilePage() {
         />
       </div>
 
-      <p className="text-center text-xs text-slate-400 pb-2">Finance Tracker v1.0</p>
+      <p className="text-center text-xs text-[var(--text-secondary)] pb-2">Finance Tracker v1.0</p>
     </div>
   );
 }

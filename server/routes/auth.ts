@@ -12,7 +12,11 @@ const app = new Hono();
  * - GET /api/auth/session
  */
 app.all('/*', async (c) => {
+  console.log(`[AUTH] Env URL: ${process.env.BETTER_AUTH_URL}`);
+  console.log(`[AUTH] Resolved baseURL: ${auth.options.baseURL}`);
+  console.log(`[AUTH] Incoming request path: ${c.req.raw.url}`);
   const response = await auth.handler(c.req.raw);
+  console.log(`[AUTH] Better Auth responded with status: ${response.status}`);
   return response;
 });
 

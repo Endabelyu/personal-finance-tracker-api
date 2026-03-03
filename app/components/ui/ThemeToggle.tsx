@@ -31,8 +31,8 @@ export function ThemeToggle() {
   }
 
   const themeOptions = [
-    { value: 'light' as const, label: 'Light', icon: Sun },
-    { value: 'dark' as const, label: 'Dark', icon: Moon },
+    { value: 'fresh-mint' as const, label: 'Light', icon: Sun },
+    { value: 'midnight-blue' as const, label: 'Dark', icon: Moon },
     { value: 'system' as const, label: 'System', icon: Monitor },
   ];
 

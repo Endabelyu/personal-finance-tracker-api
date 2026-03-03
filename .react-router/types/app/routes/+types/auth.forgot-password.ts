@@ -2,10 +2,10 @@
 
 import type { GetInfo, GetAnnotations } from "react-router/internal";
 
-type Module = typeof import("../walkthrough.js")
+type Module = typeof import("../auth.forgot-password.js")
 
 type Info = GetInfo<{
-  file: "routes/walkthrough.tsx",
+  file: "routes/auth.forgot-password.tsx",
   module: Module
 }>
 
@@ -13,8 +13,8 @@ type Matches = [{
   id: "root";
   module: typeof import("../../root.js");
 }, {
-  id: "routes/walkthrough";
-  module: typeof import("../walkthrough.js");
+  id: "routes/auth.forgot-password";
+  module: typeof import("../auth.forgot-password.js");
 }];
 
 type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }, false>;

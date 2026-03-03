@@ -25,7 +25,7 @@ vi.mock('@server/lib/db', () => ({
 }));
 
 // Mock auth middleware - use c.set for Hono context
-vi.mock('@server/lib/auth-middleware', () => ({
+vi.mock('@server/lib/auth-middleware.server', () => ({
   requireAuth: (async (c, next) => {
     const mockUser = { id: 'user-123', email: 'test@example.com' };
     c.set('user', mockUser);

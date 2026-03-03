@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type Theme = 'light' | 'dark' | 'system';
+export const THEMES = [
+  'fresh-mint',
+  'candy-pop',
+  'sunny-yellow',
+  'midnight-blue',
+  'warm-charcoal',
+  'deep-purple',
+  'system'
+] as const;
+
+export type Theme = typeof THEMES[number];
 
 const STORAGE_KEY = 'finance-tracker-theme';
 
@@ -8,22 +18,24 @@ function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'system';
   
   const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-  if (stored) return stored;
+  if (stored && THEMES.includes(stored)) return stored;
   
   return 'system';
 }
 
-function getEffectiveTheme(theme: Theme): 'light' | 'dark' {
+function getEffectiveTheme(theme: Theme): Exclude<Theme, 'system'> {
   if (theme === 'system') {
-    if (typeof window === 'undefined') return 'light';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    if (typeof window === 'undefined') return 'fresh-mint';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches 
+      ? 'midnight-blue' 
+      : 'fresh-mint';
   }
-  return theme;
+  return theme as Exclude<Theme, 'system'>;
 }
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>('system');
-  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light');
+  const [effectiveTheme, setEffectiveTheme] = useState<Exclude<Theme, 'system'>>('fresh-mint');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -41,10 +53,18 @@ export function useTheme() {
 
     // Apply theme to document
     const root = document.documentElement;
-    if (effective === 'dark') {
+    
+    // Remove all existing theme classes and the standard 'dark' class
+    root.classList.remove('dark');
+    THEMES.forEach(t => {
+      if (t !== 'system') root.classList.remove(`theme-${t}`);
+    });
+    
+    // The design relies on .theme-* classes + .dark if it's a dark theme variant
+    root.classList.add(`theme-${effective}`);
+    
+    if (['midnight-blue', 'warm-charcoal', 'deep-purple'].includes(effective)) {
       root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
     }
 
     // Store preference
@@ -57,14 +77,18 @@ export function useTheme() {
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = (e: MediaQueryListEvent) => {
-      const newEffective = e.matches ? 'dark' : 'light';
+      const newEffective = e.matches ? 'midnight-blue' : 'fresh-mint';
       setEffectiveTheme(newEffective);
       
       const root = document.documentElement;
-      if (newEffective === 'dark') {
+      root.classList.remove('dark');
+      THEMES.forEach(t => {
+        if (t !== 'system') root.classList.remove(`theme-${t}`);
+      });
+      
+      root.classList.add(`theme-${newEffective}`);
+      if (['midnight-blue', 'warm-charcoal', 'deep-purple'].includes(newEffective)) {
         root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
       }
     };
 
@@ -76,19 +100,10 @@ export function useTheme() {
     setTheme(newTheme);
   }, []);
 
-  const toggleTheme = useCallback(() => {
-    setTheme((prev) => {
-      if (prev === 'light') return 'dark';
-      if (prev === 'dark') return 'system';
-      return 'light';
-    });
-  }, []);
-
   return {
     theme,
     effectiveTheme,
     setTheme: setThemeValue,
-    toggleTheme,
     mounted,
   };
 }

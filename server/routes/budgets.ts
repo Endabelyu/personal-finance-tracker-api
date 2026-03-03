@@ -6,6 +6,7 @@ import { eq, and, sql, sum } from 'drizzle-orm';
 import { db } from '@server/lib/db';
 import { budgets, transactions, categories } from '@db/schema';
 import { requireAuth } from '@server/lib/auth';
+import { writeLimiter, readLimiter } from '@server/lib/rate-limit';
 
 const app = new Hono();
 
@@ -34,6 +35,11 @@ const updateSchema = z.object({
 
 // Apply auth middleware to all routes
 app.use('*', requireAuth);
+// Rate limiting
+app.use('GET /*', readLimiter);
+app.use('POST /*', writeLimiter);
+app.use('PUT /*', writeLimiter);
+app.use('DELETE /*', writeLimiter);
 
 // GET /api/budgets?month=YYYY-MM - List budgets for month with spending calculation
 app.get('/', zValidator('query', listQuerySchema), async (c) => {
@@ -48,39 +54,43 @@ app.get('/', zValidator('query', listQuerySchema), async (c) => {
     },
   });
 
-  // Calculate spending for each budget category
+  // Build correct month boundaries
   const startDate = `${month}-01`;
-  const endDate = `${month}-31`;
+  // Use next month's first day as exclusive upper bound (handles variable month lengths)
+  const [year, monthNum] = month.split('-');
+  const nextMonthDate = new Date(Number(year), Number(monthNum), 1); // month is 1-based here = correct next month
+  const endDate = nextMonthDate.toISOString().slice(0, 10); // YYYY-MM-DD
 
-  const budgetsWithSpending = await Promise.all(
-    userBudgets.map(async (budget) => {
-      // Sum expenses for this category in the month
-      const spentResult = await db
-        .select({
-          total: sum(transactions.amount),
-        })
-        .from(transactions)
-        .where(
-          and(
-            eq(transactions.userId, user.id),
-            eq(transactions.categoryId, budget.categoryId),
-            eq(transactions.type, 'expense'),
-            sql`${transactions.date} >= ${startDate} AND ${transactions.date} <= ${endDate}`
-          )
-        );
-
-      const spent = spentResult[0]?.total ?? '0';
-      const limitAmount = parseFloat(budget.limitAmount);
-      const spentAmount = parseFloat(spent);
-
-      return {
-        ...budget,
-        spent: spentAmount.toFixed(2),
-        remaining: (limitAmount - spentAmount).toFixed(2),
-        percentageUsed: limitAmount > 0 ? Math.round((spentAmount / limitAmount) * 100) : 0,
-      };
+  // Single aggregate query: sum expenses per category for the month (avoids N+1)
+  const spendingByCategory = await db
+    .select({
+      categoryId: transactions.categoryId,
+      total: sql<string>`COALESCE(sum(${transactions.amount}), '0')`,
     })
+    .from(transactions)
+    .where(
+      and(
+        eq(transactions.userId, user.id),
+        eq(transactions.type, 'expense'),
+        sql`${transactions.date} >= ${startDate}::date AND ${transactions.date} < ${endDate}::date`
+      )
+    )
+    .groupBy(transactions.categoryId);
+
+  const spendingMap = new Map(
+    spendingByCategory.map((s) => [s.categoryId, s.total])
   );
+
+  const budgetsWithSpending = userBudgets.map((budget) => {
+    const spent = parseFloat(spendingMap.get(budget.categoryId) ?? '0');
+    const limitAmount = parseFloat(budget.limitAmount);
+    return {
+      ...budget,
+      spent: spent.toFixed(2),
+      remaining: (limitAmount - spent).toFixed(2),
+      percentageUsed: limitAmount > 0 ? Math.round((spent / limitAmount) * 100) : 0,
+    };
+  });
 
   return c.json({
     items: budgetsWithSpending,
