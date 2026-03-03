@@ -33,7 +33,7 @@ interface SettingRowProps {
 function SettingRow({ icon: Icon, label, description, onClick, href, danger }: SettingRowProps) {
   const inner = (
     <>
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${danger ? 'bg-red-100' : 'bg-black/5'}`}>
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${danger ? 'bg-red-500/10' : 'bg-[var(--text-primary)]/5'}`}>
         <Icon className={`w-4 h-4 ${danger ? 'text-red-500' : 'text-[var(--text-primary)]'}`} />
       </div>
       <div className="flex-1 min-w-0 text-left">

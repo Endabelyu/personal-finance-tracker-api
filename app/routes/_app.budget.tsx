@@ -249,7 +249,7 @@ export default function BudgetPage() {
             <p className="text-[var(--text-secondary)] mb-6 max-w-sm mx-auto">
               Start tracking your spending by setting budget limits for your expense categories.
             </p>
-            <Button onClick={() => setIsModalOpen(true)}>
+            <Button onClick={() => setIsModalOpen(true)} className="hidden md:inline-flex">
               <Plus className="w-4 h-4 mr-2" />
               Set your first budget
             </Button>
