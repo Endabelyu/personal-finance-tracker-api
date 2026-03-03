@@ -1,29 +1,33 @@
 import { test, expect } from '@playwright/test';
 
+// Use an isolated empty storage state so we are unauthenticated
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe('Authentication Flow', () => {
   const testUser = {
     name: 'E2E Test User',
-    email: `test-${Date.now()}@example.com`,
+    // Make email completely unique to avoid parallel run overlap
+    email: `test-${Date.now()}-${Math.random()}@example.com`,
     password: 'password123',
   };
 
   test('should successfully register a new user', async ({ page }) => {
     // Navigate to register page
     await page.goto('/auth/register');
-    await expect(page).toHaveTitle(/Finance Tracker/);
+    await expect(page).toHaveTitle(/Personal Finance Tracker/);
 
     // Fill registration form
     await page.fill('input[name="name"]', testUser.name);
     await page.fill('input[name="email"]', testUser.email);
     await page.fill('input[name="password"]', testUser.password);
-    await page.fill('input[name="confirmPassword"]', testUser.password);
+    await page.fill('input[name="confirm-password"]', testUser.password);
 
     // Submit form
     await page.click('button[type="submit"]');
 
-    // Should redirect to dashboard and show welcome toast
-    await expect(page).toHaveURL('/');
-    await expect(page.locator('text=Total Balance')).toBeVisible();
+    // Should redirect to login with registered=true and show success message
+    await expect(page).toHaveURL(/.*\/auth\/login\?registered=true/);
+    await expect(page.locator('text=/Account created successfully/i').first()).toBeVisible();
   });
 
   test('should fail to log in with incorrect credentials', async ({ page }) => {
@@ -35,7 +39,7 @@ test.describe('Authentication Flow', () => {
 
     // Should stay on login page and show error
     await expect(page).toHaveURL(/.*\/auth\/login/);
-    await expect(page.locator('text=Invalid credentials')).toBeVisible();
+    await expect(page.locator('text=Invalid email or password')).toBeVisible();
   });
 
   test('should successfully log in and navigate dashboard', async ({ page }) => {
@@ -45,23 +49,29 @@ test.describe('Authentication Flow', () => {
     // Let's rely on the known user you told me to test earlier.
     await page.goto('/auth/login');
     
+    // Disable walkthrough for this isolated session
+    await page.evaluate(() => {
+      localStorage.setItem('finance-tracker-walkthrough', JSON.stringify({ isCompleted: true, isSkipped: true }));
+    });
+
     await page.fill('input[name="email"]', 'testuser1@gmail.com');
     await page.fill('input[name="password"]', 'tes-naswa');
     await page.click('button[type="submit"]');
 
     // Verify dashboard redirect
     await expect(page).toHaveURL('/');
-    await expect(page.locator('text=Dashboard')).first().toBeVisible();
+    // Check for "Total Balance" or "Total Saldo" instead of literal "Dashboard" which may not appear
+    await expect(page.locator('text=/Total Balance|Total Saldo/i').first()).toBeVisible();
 
-    // Verify navigation
-    await page.click('text=Transactions');
+    // Verify navigation by finding the visible link (Desktop sidebar vs Mobile drawer)
+    await page.locator('a[href="/transactions"]:visible').first().click();
     await expect(page).toHaveURL('/transactions');
-    await expect(page.locator('text=Income').first()).toBeVisible();
+    await expect(page.locator('text=/Income|Pemasukan/i').first()).toBeVisible();
 
-    await page.click('text=Budget');
+    await page.locator('a[href="/budget"]:visible').first().click();
     await expect(page).toHaveURL('/budget');
     
-    await page.click('text=Reports');
+    await page.locator('a[href="/reports"]:visible').first().click();
     await expect(page).toHaveURL('/reports');
   });
 });
