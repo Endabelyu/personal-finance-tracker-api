@@ -286,7 +286,7 @@ export default function TransactionsPage() {
             </div>
             <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No transactions found</h3>
             <p className="text-[var(--text-secondary)] mb-6">Get started by adding your first transaction.</p>
-            <Button onClick={() => setIsModalOpen(true)} className="hidden md:inline-flex">
+            <Button onClick={() => setIsModalOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Transaction
             </Button>
