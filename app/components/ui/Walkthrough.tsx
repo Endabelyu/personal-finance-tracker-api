@@ -174,12 +174,13 @@ export function Walkthrough() {
 
   // Handle route navigation if step has a route
   useEffect(() => {
+    if (!isActive) return;
     if (currentStep?.route && window.location.pathname !== currentStep.route) {
       window.history.pushState({}, '', currentStep.route);
       // Trigger a navigation event for React Router
       window.dispatchEvent(new PopStateEvent('popstate'));
     }
-  }, [currentStep]);
+  }, [currentStep, isActive]);
 
   if (!isActive || !currentStep) return null;
 

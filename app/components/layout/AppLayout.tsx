@@ -29,13 +29,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="min-h-screen bg-transparent text-[#2C2D35] dark:text-gray-100 selection:bg-[#2C2D35]/20 flex flex-col relative w-full overflow-x-hidden">
-      {/* Mobile Sidebar */}
+      {/* Main Sidebar Component (Handles both Mobile and Desktop internally) */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-
-      {/* Desktop Sidebar (Fixed) */}
-      <div className="hidden lg:block">
-        <Sidebar isOpen={false} onClose={() => {}} />
-      </div>
 
       {/* App Shell */}
       <div className="lg:ml-64 flex flex-col min-h-screen w-full relative">

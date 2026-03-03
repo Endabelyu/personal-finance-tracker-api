@@ -16,6 +16,15 @@ import './styles/animations.css';
 import { ToastProvider } from '@app/components/ui';
 import { defaultWalkthroughSteps } from '@app/lib/walkthrough-steps';
 
+import type { MetaFunction } from 'react-router';
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Personal Finance Tracker" },
+    { name: "description", content: "Personal Finance Tracker - Manage your finances with ease" }
+  ];
+};
+
 // Development mode check
 const isDevelopment = process.env.NODE_ENV === 'development';
 

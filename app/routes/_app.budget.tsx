@@ -1,5 +1,5 @@
 import '../styles/animations.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from 'react-router';
 import { useLoaderData, useSearchParams, useNavigation, useFetcher } from 'react-router';
 import { requireSession } from '@app/lib/auth.server';
@@ -12,7 +12,7 @@ import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
 import { Plus, Target, Calendar, TrendingUp, Wallet, AlertCircle } from 'lucide-react';
 import type { Budget, Category } from '@db/schema';
 import { listCategories } from '@server/lib/services/categories.server';
-import { listBudgetsWithSpending, deleteBudget } from '@server/lib/services/budgets.server';
+import { listBudgetsWithSpending, deleteBudget, upsertBudget } from '@server/lib/services/budgets.server';
 
 export const meta: MetaFunction = () => {
   return [
@@ -57,6 +57,21 @@ export async function action({ request }: ActionFunctionArgs): Promise<Response>
   const formData = await request.formData();
   const intent = formData.get('intent') as string;
 
+  if (intent === 'create' || intent === 'update') {
+    try {
+      const budget = await upsertBudget({
+        userId: session.userId,
+        categoryId: formData.get('categoryId') as string,
+        limitAmount: formData.get('limitAmount') as string,
+        month: formData.get('month') as string,
+      });
+      return Response.json({ success: true, budget });
+    } catch (error) {
+      const err = error as { status?: number; message?: string };
+      return Response.json({ error: err.message || 'Failed to save budget' }, { status: err.status || 500 });
+    }
+  }
+
   if (intent === 'delete') {
     const id = formData.get('id') as string;
     try {
@@ -100,7 +115,18 @@ export default function BudgetPage() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<BudgetWithSpending | null>(null);
-  
+
+  // Handle ?new=true to open modal automatically
+  useEffect(() => {
+    if (searchParams.get('new') === 'true') {
+      setIsModalOpen(true);
+      // Clean up the URL
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('new');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const currentMonth = searchParams.get('month') || getCurrentMonth();
   const summary = calculateSummary(budgets);
   const overallPercentage = summary.totalBudgeted > 0

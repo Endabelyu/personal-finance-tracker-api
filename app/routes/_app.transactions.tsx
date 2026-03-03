@@ -12,7 +12,7 @@ import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
 import { Plus, Search, Filter, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import type { Transaction, Category } from '@app/types';
 import { listCategories } from '@server/lib/services/categories.server';
-import { listTransactions, deleteTransaction } from '@server/lib/services/transactions.server';
+import { listTransactions, deleteTransaction, createTransaction, updateTransaction } from '@server/lib/services/transactions.server';
 
 export const meta: MetaFunction = () => {
   return [
@@ -67,6 +67,42 @@ export async function action({ request }: ActionFunctionArgs): Promise<Response>
   const session = await requireSession(request);
   const formData = await request.formData();
   const intent = formData.get('intent') as string;
+
+  if (intent === 'create') {
+    try {
+      const transaction = await createTransaction({
+        userId: session.userId,
+        type: formData.get('type') as 'income' | 'expense',
+        amount: formData.get('amount') as string,
+        categoryId: formData.get('categoryId') as string,
+        description: formData.get('description') as string | undefined,
+        date: formData.get('date') as string,
+      });
+      return Response.json({ success: true, transaction });
+    } catch (error) {
+      const err = error as { status?: number; message?: string };
+      return Response.json({ error: err.message || 'Failed to create transaction' }, { status: err.status || 500 });
+    }
+  }
+
+  if (intent === 'update') {
+    const id = formData.get('id') as string;
+    if (!id) return Response.json({ error: 'Transaction ID required' }, { status: 400 });
+    
+    try {
+      const transaction = await updateTransaction(id, session.userId, {
+        type: formData.get('type') as 'income' | 'expense' | undefined,
+        amount: formData.get('amount') as string | undefined,
+        categoryId: formData.get('categoryId') as string | undefined,
+        description: formData.get('description') as string | undefined,
+        date: formData.get('date') as string | undefined,
+      });
+      return Response.json({ success: true, transaction });
+    } catch (error) {
+      const err = error as { status?: number; message?: string };
+      return Response.json({ error: err.message || 'Failed to update transaction' }, { status: err.status || 500 });
+    }
+  }
 
   if (intent === 'delete') {
     const id = formData.get('id') as string;
