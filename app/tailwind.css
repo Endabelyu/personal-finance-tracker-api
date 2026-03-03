@@ -1,89 +1,168 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
+/* ── BASE & VARIABLES ─────────────────────────────────────── */
 @layer base {
+  :root {
+    /* Base Glassmorphism Theme (Midnight Blue default) */
+    --app-bg-start: #0f172a; /* Slate 900 */
+    --app-bg-end: #1e1b4b;   /* Indigo 950 */
+    
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-border: rgba(255, 255, 255, 0.1);
+    
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.6);
+    
+    /* Vibrant Accent Gradients */
+    --gradient-hero-start: #60a5fa; /* Blue 400 */
+    --gradient-hero-end: #a78bfa;   /* Violet 400 */
+    
+    --gradient-success-start: #34d399;
+    --gradient-success-end: #10b981;
+    
+    --gradient-danger-start: #fb7185;
+    --gradient-danger-end: #e11d48;
+  }
+
+  .theme-light {
+    --app-bg-start: #f8fafc;
+    --app-bg-end: #e2e8f0;
+    
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(255, 255, 255, 1);
+    
+    --text-primary: #0f172a;
+    --text-secondary: rgba(15, 23, 42, 0.6);
+    
+    --gradient-hero-start: #3b82f6;
+    --gradient-hero-end: #8b5cf6;
+  }
+
   html {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
-  * {
-    @apply border-slate-200;
-  }
-
   body {
-    @apply bg-slate-50 text-slate-900;
+    background: linear-gradient(135deg, var(--app-bg-start), var(--app-bg-end));
+    color: var(--text-primary);
+    min-height: 100vh;
+    background-attachment: fixed;
   }
 }
 
+/* ── COMPONENT UTILITIES ──────────────────────────────────── */
 @layer components {
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+  .font-handwriting {
+    font-family: 'Caveat', cursive;
   }
 
-  .btn-primary {
-    @apply btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  /* Glass Card Primitive */
+  .glass-card {
+    background-color: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
   }
+
+  /* Buttons */
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger,
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 16px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    outline: none;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary { 
+    background: linear-gradient(135deg, var(--gradient-hero-start), var(--gradient-hero-end));
+    color: white; 
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  }
+  .btn-primary:active { transform: scale(0.95); }
 
   .btn-secondary {
-    @apply btn bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-500;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    backdrop-filter: blur(8px);
   }
+  .btn-secondary:active { transform: scale(0.95); }
 
   .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+    background: linear-gradient(135deg, var(--gradient-danger-start), var(--gradient-danger-end));
+    color: white;
+    box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3);
   }
 
   .btn-ghost {
-    @apply btn bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900;
+    background-color: transparent;
+    color: var(--text-primary);
+  }
+  .btn-ghost:hover {
+    background-color: rgba(255, 255, 255, 0.1);
   }
 
+  /* Inputs */
   .input {
-    @apply block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none;
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--text-primary);
+    background-color: var(--card-bg);
+    backdrop-filter: blur(8px);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .input::placeholder { color: var(--text-secondary); }
+
+  .input:focus {
+    border-color: var(--gradient-hero-start);
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
   }
 
   .input-error {
-    @apply input border-red-300 focus:border-red-500 focus:ring-red-500;
-  }
-
-  .card {
-    @apply bg-white rounded-xl shadow-sm border border-slate-200;
-  }
-
-  .card-hover {
-    @apply card transition-shadow hover:shadow-md;
+    border-color: var(--gradient-danger-start);
   }
 }
 
+/* ── ANIMATIONS ───────────────────────────────────────────── */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  .animate-fade-in {
-    animation: fadeIn 0.2s ease-out;
-  }
-
-  .animate-slide-up {
-    animation: slideUp 0.3s ease-out;
-  }
+  .text-balance { text-wrap: balance; }
+  .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+  .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+  .animate-float { animation: float 6s ease-in-out infinite; }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
 }
