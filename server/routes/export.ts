@@ -1,0 +1,51 @@
+import { Hono } from 'hono';
+import { requireAuth } from '@server/lib/auth';
+import { db } from '@server/lib/db';
+import { transactions, categories } from '@db/schema';
+import { eq, and, desc } from 'drizzle-orm';
+
+const app = new Hono();
+
+/**
+ * GET /api/export/transactions
+ * Returns all user transactions as a downloadable CSV file.
+ */
+app.get('/transactions', requireAuth, async (c) => {
+  const user = c.get('user') as { id: string; name?: string };
+
+  const rows = await db
+    .select({
+      date: transactions.date,
+      type: transactions.type,
+      amount: transactions.amount,
+      description: transactions.description,
+      categoryLabel: categories.label,
+    })
+    .from(transactions)
+    .leftJoin(categories, eq(transactions.categoryId, categories.id))
+    .where(eq(transactions.userId, user.id))
+    .orderBy(desc(transactions.date));
+
+  // Build CSV
+  const header = 'Date,Type,Category,Description,Amount';
+  const csvRows = rows.map((row) => {
+    const date = row.date ? new Date(row.date).toISOString().split('T')[0] : '';
+    const type = row.type ?? '';
+    const category = (row.categoryLabel ?? '').replace(/,/g, ';');
+    const description = (row.description ?? '').replace(/,/g, ';').replace(/\n/g, ' ');
+    const amount = row.amount ?? '0';
+    return `${date},${type},${category},${description},${amount}`;
+  });
+
+  const csv = [header, ...csvRows].join('\n');
+  const filename = `transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+
+  return new Response(csv, {
+    headers: {
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    },
+  });
+});
+
+export default app;
