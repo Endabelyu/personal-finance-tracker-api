@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pencil, Trash2, AlertCircle, Target } from 'lucide-react';
 import { Button } from '@app/components/ui/Button';
 import { ConfirmDialog } from '@app/components/ui';
-import type { Budget, Category } from '@db/schema';
+import type { Budget, Category } from '@app/types';
 
 interface BudgetWithSpending extends Budget {
   category: Category;
@@ -19,42 +19,28 @@ interface BudgetCardProps {
 }
 
 export function BudgetCard({ budget, onEdit, onDelete, isDeleting }: BudgetCardProps) {
-  const limit = parseFloat(budget.limitAmount);
-  const spent = parseFloat(budget.spent);
-  const remaining = parseFloat(budget.remaining);
+  const limit = parseFloat(String(budget.limitAmount));
+  const spent = parseFloat(String(budget.spent));
+  const remaining = parseFloat(String(budget.remaining));
   const percentage = budget.percentageUsed;
   
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Determine status colors
   const getStatusColor = () => {
     if (percentage >= 100) return {
-      bar: 'bg-red-500',
-      bg: 'bg-red-50',
-      border: 'border-red-100',
-      text: 'text-red-700',
-      icon: 'bg-red-100 text-red-600'
-    };
-    if (percentage >= 90) return {
-      bar: 'bg-yellow-500',
-      bg: 'bg-yellow-50',
-      border: 'border-yellow-100',
-      text: 'text-yellow-700',
-      icon: 'bg-yellow-100 text-yellow-600'
+      bar: 'bg-gradient-to-r from-rose-500 to-rose-400',
+      bg: 'glass-card border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.1)]',
+      iconBg: 'bg-rose-500/20 text-rose-400',
     };
     if (percentage >= 75) return {
-      bar: 'bg-yellow-400',
-      bg: 'bg-yellow-50/50',
-      border: 'border-yellow-100/50',
-      text: 'text-yellow-700',
-      icon: 'bg-yellow-100 text-yellow-600'
+      bar: 'bg-gradient-to-r from-amber-500 to-amber-400',
+      bg: 'glass-card border-amber-500/30',
+      iconBg: 'bg-amber-500/20 text-amber-400',
     };
     return {
-      bar: 'bg-green-500',
-      bg: 'bg-white',
-      border: 'border-gray-200',
-      text: 'text-green-700',
-      icon: 'bg-green-100 text-green-600'
+      bar: 'bg-gradient-to-r from-[var(--gradient-hero-start)] to-[var(--gradient-hero-end)]',
+      bg: 'glass-card border-[var(--gradient-hero-start)]/30',
+      iconBg: 'bg-[var(--gradient-hero-start)]/20 text-[var(--gradient-hero-start)]',
     };
   };
 
@@ -71,16 +57,20 @@ export function BudgetCard({ budget, onEdit, onDelete, isDeleting }: BudgetCardP
 
   return (
     <>
-      <div className={`${status.bg} border ${status.border} rounded-xl p-5 transition-all duration-200 hover:shadow-md`}>
+      <div className={`relative ${status.bg} p-5 transition-transform hover:-translate-y-1 hover:shadow-lg`}>
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            {budget.category.icon && (
-              <span className="text-2xl">{budget.category.icon}</span>
-            )}
+          <div className="flex items-center gap-4">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${status.iconBg}`}>
+              {budget.category.icon ? (
+                <span className="text-2xl">{budget.category.icon}</span>
+              ) : (
+                <Target className="w-6 h-6" />
+              )}
+            </div>
             <div>
-              <h3 className="font-semibold text-gray-900">{budget.category.label}</h3>
-              <p className="text-xs text-gray-500">{budget.month}</p>
+              <h3 className="font-bold text-lg text-[var(--text-primary)] tracking-tight">{budget.category.label}</h3>
+              <p className="text-sm font-medium text-[var(--text-secondary)]">Terpakai Anggaran {percentage}%.</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -88,7 +78,7 @@ export function BudgetCard({ budget, onEdit, onDelete, isDeleting }: BudgetCardP
               variant="ghost"
               size="sm"
               onClick={onEdit}
-              className="h-8 w-8 p-0 text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+              className="h-10 w-10 p-0 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800"
             >
               <Pencil className="w-4 h-4" />
             </Button>
@@ -97,7 +87,7 @@ export function BudgetCard({ budget, onEdit, onDelete, isDeleting }: BudgetCardP
               size="sm"
               onClick={handleDeleteClick}
               disabled={isDeleting}
-              className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50"
+              className="h-10 w-10 p-0 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
             >
               {isDeleting ? (
                 <span className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
@@ -108,55 +98,27 @@ export function BudgetCard({ budget, onEdit, onDelete, isDeleting }: BudgetCardP
           </div>
         </div>
 
-        {/* Amounts */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div>
-            <p className="text-xs text-gray-500 mb-1">Budget</p>
-            <p className="text-sm font-bold text-gray-900">
-              ${limit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 mb-1">Spent</p>
-            <p className="text-sm font-bold text-red-600">
-              ${spent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 mb-1">Remaining</p>
-            <p className={`text-sm font-bold ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ${Math.abs(remaining).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
-          </div>
+        {/* Progress Bar */}
+        <div className="h-3 w-full bg-white/10 dark:bg-[#1A1A1A]/50 rounded-full overflow-visible relative mb-2 shadow-inner">
+          <div
+            className={`h-full ${status.bar} rounded-full transition-all duration-500 ease-out`}
+            style={{ width: `${Math.min(percentage, 100)}%` }}
+          />
+          {percentage >= 100 && (
+             <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-6 h-6 bg-rose-500 border-2 border-white dark:border-[#2C2D35] rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md z-10">
+               !
+             </div>
+          )}
         </div>
 
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              {percentage >= 90 && (
-                <AlertCircle className={`w-4 h-4 ${status.text}`} />
-              )}
-              <span className={`text-sm font-medium ${status.text}`}>
-                {percentage}% used
-              </span>
-            </div>
-            {percentage >= 100 ? (
-              <span className="text-xs font-semibold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
-                Over Budget
-              </span>
-            ) : percentage >= 90 ? (
-              <span className="text-xs font-semibold text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded-full">
-                Near Limit
-              </span>
-            ) : null}
-          </div>
-          <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full ${status.bar} rounded-full transition-all duration-500 ease-out`}
-              style={{ width: `${Math.min(percentage, 100)}%` }}
-            />
-          </div>
+        {/* Amounts */}
+        <div className="flex justify-between mt-2 px-1">
+          <p className="text-sm font-bold text-[var(--text-primary)]">
+            {spent.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
+          </p>
+          <p className="text-sm font-bold text-[var(--text-secondary)]">
+            {limit.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
+          </p>
         </div>
       </div>
 

@@ -42,7 +42,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
-  const [activeSection, setActiveSection] = useState<'main' | 'settings'>('main');
 
   const user = session?.user;
   const userInitials = user?.name
@@ -90,7 +89,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
-      setActiveSection('main');
     }
     return () => {
       document.body.style.overflow = '';
@@ -121,178 +119,125 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         ref={sidebarRef}
         className={`
           fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw]
-          bg-white dark:bg-gray-900 
-          shadow-2xl shadow-black/20
+          bg-white dark:bg-[#1A1C26]
+          border-r-2 border-[#2C2D35]/10 dark:border-white/5
+          shadow-2xl shadow-black/10
           transform transition-transform duration-300 ease-out
+          flex flex-col
           lg:hidden
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
         {/* User Profile Section */}
-        <div className="p-6 bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800">
-          <div className="flex items-start justify-between">
-            {/* Avatar */}
-            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-white font-bold text-xl border-2 border-white/30">
+        <div className="p-5 bg-[#2C2D35] dark:bg-[#13151C]">
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-12 h-12 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center text-white font-bold text-lg">
               {user?.image ? (
-                <img
-                  src={user.image}
-                  alt={user.name || user.email}
-                  className="w-full h-full rounded-2xl object-cover"
-                />
+                <img src={user.image} alt={user.name || user.email} className="w-full h-full rounded-2xl object-cover" />
               ) : (
                 userInitials
               )}
             </div>
-            
-            {/* Close Button */}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-colors"
+              className="p-2 rounded-xl bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors"
               aria-label="Close menu"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
-
-          {/* User Info */}
-          <div className="mt-4">
-            <p className="text-lg font-semibold text-white">
-              {isPending ? 'Loading...' : (user?.name || user?.email || 'Guest')}
-            </p>
-            <p className="text-sm text-blue-100">
-              {user?.email && user.name ? user.email : 'Personal Finance Tracker'}
-            </p>
-          </div>
+          <p className="text-sm font-semibold text-white truncate">
+            {isPending ? '...' : (user?.name || user?.email || 'Guest')}
+          </p>
+          <p className="text-xs text-white/50 truncate">
+            {user?.email && user.name ? user.email : ''}
+          </p>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-hidden relative h-[calc(100%-180px)]">
-          {/* Main Menu */}
-          <div className={`
-            absolute inset-0 transition-transform duration-300 ease-out overflow-y-auto
-            ${activeSection === 'main' ? 'translate-x-0' : '-translate-x-full'}
-          `}>
-            {/* Navigation */}
-            <nav className="p-4 space-y-1">
-              {navItems.map(({ path, label, icon: Icon }) => (
-                <NavLink
-                  key={path}
-                  to={path}
-                  end={path === '/'}
-                  onClick={onClose}
-                  className={({ isActive }) => `
-                    flex items-center gap-4 px-4 py-3.5 rounded-xl
-                    text-[15px] font-medium transition-all duration-200
-                    min-h-[56px]
-                    ${isActive
-                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }
-                  `}
-                >
-                  <Icon className="w-6 h-6 flex-shrink-0" />
-                  <span>{label}</span>
-                </NavLink>
-              ))}
-            </nav>
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+          {navItems.map(({ path, label, icon: Icon }) => (
+            <NavLink
+              key={path}
+              to={path}
+              end={path === '/'}
+              onClick={onClose}
+              className={({ isActive }) => `
+                flex items-center gap-3 px-4 py-3 rounded-xl
+                text-sm font-semibold transition-all duration-200 min-h-[48px]
+                ${isActive
+                  ? 'bg-[#2C2D35] text-white dark:bg-white/10 dark:text-white'
+                  : 'text-[#2C2D35]/60 dark:text-white/50 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35] dark:hover:bg-white/5 dark:hover:text-white'
+                }
+              `}
+            >
+              <Icon className="w-5 h-5 flex-shrink-0" />
+              <span>{label}</span>
+            </NavLink>
+          ))}
 
-            <div className="mx-4 my-2 h-px bg-gray-200 dark:bg-gray-800" />
+          <div className="my-2 h-px bg-[#2C2D35]/8 dark:bg-white/5" />
 
-            {/* Secondary Menu */}
-            <div className="p-4 space-y-1">
-              {/* Help */}
-              <button
-                onClick={() => {
-                  onClose();
-                  startWalkthrough(defaultWalkthroughSteps);
-                }}
-                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors min-h-[56px]"
-              >
-                <HelpCircle className="w-6 h-6 flex-shrink-0" />
-                <span>Help & Tour</span>
-              </button>
+          {/* Help */}
+          <button
+            onClick={() => { onClose(); startWalkthrough(defaultWalkthroughSteps); }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-[#2C2D35]/60 dark:text-white/50 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35] dark:hover:bg-white/5 dark:hover:text-white transition-colors min-h-[48px]"
+          >
+            <HelpCircle className="w-5 h-5 flex-shrink-0" />
+            <span>Help & Tour</span>
+          </button>
 
-              {/* Settings */}
-              <button
-                onClick={() => setActiveSection('settings')}
-                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors min-h-[56px]"
-              >
-                <Settings className="w-6 h-6 flex-shrink-0" />
-                <span className="flex-1 text-left">Settings</span>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
-              </button>
-            </div>
-          </div>
-
-          {/* Settings Submenu */}
-          <div className={`
-            absolute inset-0 transition-transform duration-300 ease-out overflow-y-auto
-            ${activeSection === 'settings' ? 'translate-x-0' : 'translate-x-full'}
-          `}>
-            {/* Settings Header */}
-            <div className="flex items-center gap-3 p-4 border-b border-gray-200 dark:border-gray-800">
-              <button
-                onClick={() => setActiveSection('main')}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <ChevronRight className="w-5 h-5 rotate-180" />
-              </button>
-              <span className="text-lg font-semibold text-gray-900 dark:text-white">Settings</span>
-            </div>
-
-            {/* Theme Settings */}
-            <div className="p-4">
-              <p className="px-4 text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Theme</p>
-              <div className="space-y-1">
-                <button
-                  onClick={() => setTheme('light')}
-                  className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-medium transition-colors min-h-[56px] ${theme === 'light' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                >
-                  <Sun className="w-6 h-6 flex-shrink-0" />
-                  <span>Light</span>
-                </button>
-                <button
-                  onClick={() => setTheme('dark')}
-                  className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-medium transition-colors min-h-[56px] ${theme === 'dark' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                >
-                  <Moon className="w-6 h-6 flex-shrink-0" />
-                  <span>Dark</span>
-                </button>
-                <button
-                  onClick={() => setTheme('system')}
-                  className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-medium transition-colors min-h-[56px] ${theme === 'system' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                >
-                  <Monitor className="w-6 h-6 flex-shrink-0" />
-                  <span>System</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+          {/* Settings — navigate to /settings page */}
+          <NavLink
+            to="/settings"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] ${
+                isActive ? 'bg-[#2C2D35] text-white dark:bg-white/10 dark:text-white' : 'text-[#2C2D35]/60 dark:text-white/50 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35] dark:hover:bg-white/5 dark:hover:text-white'
+              }`
+            }
+          >
+            <Settings className="w-5 h-5 flex-shrink-0" />
+            <span className="flex-1 text-left">Settings</span>
+            <ChevronRight className="w-4 h-4 opacity-40" />
+          </NavLink>
+        </nav>
 
         {/* Footer - Sign Out */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 safe-area-pb">
+        <div className="p-4 border-t-2 border-[#2C2D35]/8 dark:border-white/5">
+          <NavLink
+            to="/profile"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] mb-1 ${
+                isActive ? 'bg-[#2C2D35] text-white dark:bg-white/10 dark:text-white' : 'text-[#2C2D35]/60 dark:text-white/50 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35] dark:hover:bg-white/5 dark:hover:text-white'
+              }`
+            }
+          >
+            <User className="w-5 h-5 flex-shrink-0" />
+            <span>Profil</span>
+          </NavLink>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[15px] font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors min-h-[56px]"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/15 transition-colors min-h-[48px]"
           >
-            <LogOut className="w-6 h-6 flex-shrink-0" />
+            <LogOut className="w-5 h-5 flex-shrink-0" />
             <span>Sign Out</span>
           </button>
         </div>
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 fixed left-0 top-0">
+      <aside className="hidden lg:flex flex-col w-64 h-screen bg-white border-r-2 border-[#2C2D35]/10 fixed left-0 top-0">
         {/* Logo */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+        <div className="p-6 border-b-2 border-[#2C2D35]/10">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
+            <div className="w-10 h-10 rounded-xl bg-[#2C2D35] flex items-center justify-center">
               <Wallet className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-lg text-gray-900 dark:text-white leading-tight">Finance</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Tracker</p>
+              <h1 className="font-bold text-lg text-[#2C2D35] leading-tight">Finance</h1>
+              <p className="text-xs text-slate-400">Tracker</p>
             </div>
           </Link>
         </div>
@@ -305,10 +250,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               to={path}
               end={path === '/'}
               className={({ isActive }) => `
-                flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 min-h-[48px]
+                flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 min-h-[48px]
                 ${isActive
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-[#2C2D35] text-white'
+                  : 'text-[#2C2D35]/60 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35]'
                 }
               `}
             >
@@ -318,9 +263,20 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           ))}
         </nav>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-          <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
+        {/* Theme & User Footer */}
+        <div className="p-4 border-t-2 border-[#2C2D35]/10 space-y-1">
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] ${
+                isActive ? 'bg-[#2C2D35] text-white' : 'text-[#2C2D35]/60 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35]'
+              }`
+            }
+          >
+            <User className="w-5 h-5 flex-shrink-0" />
+            <span>Profil</span>
+          </NavLink>
+          <p className="text-xs text-slate-400 text-center pt-2">
             © {new Date().getFullYear()} Finance Tracker
           </p>
         </div>

@@ -58,8 +58,8 @@ export function Header({ onMenuClick, title }: HeaderProps) {
           transition-all duration-300 ease-out
           ${isVisible ? 'translate-y-0' : '-translate-y-full'}
           ${isScrolled
-            ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm border-b border-gray-200/50 dark:border-gray-800/50'
-            : 'bg-transparent'
+            ? 'bg-white/95 dark:bg-[#1A1C26]/95 backdrop-blur-2xl shadow-sm border-b border-black/5 dark:border-white/5'
+            : 'bg-[#FAF5EE]/80 dark:bg-transparent backdrop-blur-sm'
           }
         `}
       >
@@ -103,7 +103,7 @@ export function Header({ onMenuClick, title }: HeaderProps) {
                 </button>
                 <Link
                   to="/transactions/new"
-                  className="flex items-center justify-center w-11 h-11 rounded-full bg-blue-600 active:bg-blue-700 text-white shadow-md shadow-blue-600/20 transition-colors"
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-[#2C2D35] dark:bg-[#6372FF] active:opacity-80 text-white transition-colors"
                   aria-label="Add new"
                 >
                   <Plus className="w-5 h-5" />
@@ -115,7 +115,7 @@ export function Header({ onMenuClick, title }: HeaderProps) {
       </header>
 
       {/* Desktop Header */}
-      <header className="hidden lg:flex items-center justify-between h-16 px-8 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+      <header className="hidden lg:flex items-center justify-between h-16 px-8 bg-white dark:bg-[#1A1C26] border-b-2 border-black/5 dark:border-white/5">
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">{pageTitle}</h1>
 
         <div className="flex items-center gap-3">

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useFetcher } from 'react-router';
 import { Button, Input } from '@app/components/ui';
 import { Loader2, DollarSign, Calendar, Tag, FileText, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
-import type { Transaction, Category } from '@db/schema';
+import type { Transaction, Category } from '@app/types';
 
 interface TransactionFormProps {
   transaction?: Transaction | null;
@@ -78,10 +78,10 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Type Selection - Segmented Control */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2.5">
+        <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2.5">
           Transaction Type
         </label>
-        <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-xl">
+        <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--card-bg)] backdrop-blur-md rounded-xl border border-[var(--card-border)]">
           <button
             type="button"
             onClick={() => setType('expense')}
@@ -89,12 +89,12 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
               relative flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold
               transition-all duration-200 ease-out
               ${type === 'expense'
-                ? 'bg-white text-red-600 shadow-sm ring-1 ring-red-100'
-                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                ? 'bg-[var(--card-bg)] backdrop-blur-md text-rose-500 shadow-sm ring-1 ring-rose-500/20'
+                : 'text-[var(--text-primary)]/60 hover:text-[var(--text-primary)] hover:bg-[var(--card-bg)] backdrop-blur-md/50'
               }
             `}
           >
-            <ArrowDownCircle className={`w-4 h-4 ${type === 'expense' ? 'text-red-500' : ''}`} />
+            <ArrowDownCircle className={`w-4 h-4 ${type === 'expense' ? 'text-rose-500' : ''}`} />
             Expense
           </button>
           <button
@@ -104,12 +104,12 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
               relative flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold
               transition-all duration-200 ease-out
               ${type === 'income'
-                ? 'bg-white text-green-600 shadow-sm ring-1 ring-green-100'
-                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                ? 'bg-[var(--card-bg)] backdrop-blur-md text-emerald-500 shadow-sm ring-1 ring-emerald-500/20'
+                : 'text-[var(--text-primary)]/60 hover:text-[var(--text-primary)] hover:bg-[var(--card-bg)] backdrop-blur-md/50'
               }
             `}
           >
-            <ArrowUpCircle className={`w-4 h-4 ${type === 'income' ? 'text-green-500' : ''}`} />
+            <ArrowUpCircle className={`w-4 h-4 ${type === 'income' ? 'text-emerald-500' : ''}`} />
             Income
           </button>
         </div>
@@ -118,14 +118,14 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
 
       {/* Amount Input with Currency Formatting */}
       <div>
-        <label htmlFor="amount" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="amount" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
           Amount
         </label>
         <div className="relative group">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
             <DollarSign className={`
               w-5 h-5 transition-colors duration-200
-              ${type === 'income' ? 'text-green-500' : 'text-red-500'}
+              ${type === 'income' ? 'text-emerald-500' : 'text-rose-500'}
             `} />
           </div>
           <Input
@@ -137,12 +137,9 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
             placeholder="0.00"
             defaultValue={transaction?.amount ? parseFloat(transaction.amount.toString()).toFixed(2) : ''}
             className={`
-              pl-11 pr-4 py-2.5 text-lg font-semibold
-              ${type === 'income'
-                ? 'focus:border-green-500 focus:ring-green-500/20'
-                : 'focus:border-red-500 focus:ring-red-500/20'
-              }
-              ${errors.amount ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : ''}
+              pl-11 pr-4 py-2.5 text-lg font-semibold border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-md
+              focus:border-[#5c4a44] focus:ring-[#5c4a44]/20
+              ${errors.amount ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : ''}
               transition-all duration-200
             `}
           />
@@ -163,7 +160,7 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
 
       {/* Category Select */}
       <div>
-        <label htmlFor="categoryId" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="categoryId" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
           Category
         </label>
         <div className="relative group">
@@ -175,11 +172,11 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
             name="categoryId"
             defaultValue={transaction?.categoryId || ''}
             className={`
-              w-full rounded-lg border px-10 py-2.5 text-sm
-              bg-white appearance-none cursor-pointer
+              w-full rounded-xl border-2 px-10 py-2.5 text-sm
+              bg-[var(--card-bg)] backdrop-blur-md appearance-none cursor-pointer text-[var(--text-primary)]
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
-              ${errors.categoryId ? 'border-red-300 focus:border-red-500' : 'border-gray-300'}
+              focus:outline-none focus:ring-2 focus:ring-[#5c4a44]/20 focus:border-[#5c4a44]
+              ${errors.categoryId ? 'border-rose-500 focus:border-rose-500' : 'border-[#5c4a44]/15'}
             `}
           >
             <option value="" disabled>Select a category</option>
@@ -212,7 +209,7 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
 
       {/* Date Input */}
       <div>
-        <label htmlFor="date" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="date" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
           Date
         </label>
         <div className="relative group">
@@ -225,8 +222,9 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
             type="date"
             defaultValue={transaction?.date ? new Date(transaction.date).toISOString().split('T')[0] : today}
             className={`
-              pl-10
-              ${errors.date ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : ''}
+              pl-10 text-[var(--text-primary)] border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-md
+              focus:border-[#5c4a44] focus:ring-[#5c4a44]/20
+              ${errors.date ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : ''}
             `}
           />
         </div>
@@ -240,9 +238,9 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
 
       {/* Description Input */}
       <div>
-        <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="description" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
           Description
-          <span className="text-gray-400 font-normal ml-1">(optional)</span>
+          <span className="text-[var(--text-primary)]/50 font-normal ml-1">(optional)</span>
         </label>
         <div className="relative group">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -254,19 +252,18 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
             type="text"
             placeholder="e.g., Grocery shopping at Whole Foods"
             defaultValue={transaction?.description || ''}
-            className="pl-10"
+            className="pl-10 text-[var(--text-primary)] border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-md focus:border-[#5c4a44] focus:ring-[#5c4a44]/20"
           />
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3 pt-4 border-t border-gray-100">
+      <div className="flex gap-3 pt-4 border-t border-[#5c4a44]/10">
         <Button
           type="button"
-          variant="outline"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="flex-1 h-11"
+          className="flex-1 h-11 bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] border border-[var(--card-border)] hover:bg-[#F5E6D8]"
         >
           Cancel
         </Button>
@@ -274,10 +271,10 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
           type="submit"
           disabled={isSubmitting || availableCategories.length === 0}
           className={`
-            flex-1 h-11 font-semibold
+            flex-1 h-11 font-semibold text-white
             ${type === 'income'
-              ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-              : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+              ? 'bg-[#4a9473] hover:bg-[#3a8060] border-2 border-transparent'
+              : 'bg-[#c0544a] hover:bg-[#a0443a] border-2 border-transparent'
             }
           `}
         >

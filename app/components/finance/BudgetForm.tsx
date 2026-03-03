@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useFetcher } from 'react-router';
 import { Button, Input } from '@app/components/ui';
 import { Loader2, DollarSign, Tag, Calendar, Target } from 'lucide-react';
-import type { Budget, Category } from '@db/schema';
+import type { Budget, Category } from '@app/types';
 
 interface BudgetWithSpending extends Budget {
   category?: Category;
@@ -92,7 +92,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Category Select */}
       <div>
-        <label htmlFor="categoryId" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="categoryId" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
           Category
         </label>
         <div className="relative group">
@@ -107,11 +107,11 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
             disabled={isEditing}
             className={`
               w-full rounded-lg border px-10 py-2.5 text-sm
-              bg-white appearance-none cursor-pointer
+              bg-[var(--card-bg)] backdrop-blur-md appearance-none cursor-pointer
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
-              ${errors.categoryId ? 'border-red-300 focus:border-red-500' : 'border-gray-300'}
-              ${isEditing ? 'bg-gray-100 cursor-not-allowed' : ''}
+              focus:outline-none focus:ring-2 focus:ring-[var(--gradient-hero-start)]/20 focus:border-[var(--gradient-hero-start)]
+              ${errors.categoryId ? 'border-red-300 focus:border-red-500' : 'border-[var(--card-border)]'}
+              ${isEditing ? 'bg-white/10 dark:bg-black/20 cursor-not-allowed' : ''}
             `}
           >
             <option value="" disabled>Select a category</option>
@@ -134,7 +134,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
           </p>
         )}
         {isEditing && (
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-[var(--text-secondary)]">
             Category cannot be changed when editing. Delete and recreate to change categories.
           </p>
         )}
@@ -142,7 +142,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
 
       {/* Month Input */}
       <div>
-        <label htmlFor="month" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="month" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
           Month
         </label>
         <div className="relative group">
@@ -158,7 +158,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
             className={`
               pl-10
               ${errors.month ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : ''}
-              ${isEditing ? 'bg-gray-100 cursor-not-allowed' : ''}
+              ${isEditing ? 'bg-white/10 dark:bg-black/20 cursor-not-allowed' : ''}
             `}
           />
         </div>
@@ -172,7 +172,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
 
       {/* Limit Amount Input */}
       <div>
-        <label htmlFor="limitAmount" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="limitAmount" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
           Budget Limit
         </label>
         <div className="relative group">
@@ -201,7 +201,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
             {errors.limitAmount}
           </p>
         ) : (
-          <p className="mt-1.5 text-xs text-gray-500">
+          <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
             Set the maximum amount you want to spend in this category
           </p>
         )}
@@ -209,7 +209,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
 
       {/* Quick Amount Buttons */}
       <div>
-        <p className="text-xs font-medium text-gray-500 mb-2">Quick select</p>
+        <p className="text-xs font-medium text-[var(--text-secondary)] mb-2">Quick select</p>
         <div className="flex flex-wrap gap-2">
           {[50, 100, 200, 500, 1000].map((amount) => (
             <button
@@ -221,7 +221,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
                   input.value = amount.toString();
                 }
               }}
-              className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] bg-white/10 dark:bg-black/20 hover:bg-white/20 dark:hover:bg-black/40 rounded-lg transition-colors"
             >
               ${amount}
             </button>

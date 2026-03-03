@@ -1,6 +1,6 @@
 import { useFetcher } from 'react-router';
 import { ArrowUpRight, ArrowDownRight, Edit2, Trash2, Loader2 } from 'lucide-react';
-import type { Transaction, Category } from '@db/schema';
+import type { Transaction, Category } from '@app/types';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -76,11 +76,9 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
   return (
     <div
       className={`
-        group flex items-center justify-between p-4
-        ${isIncome ? 'bg-green-50/40 hover:bg-green-50/70' : 'bg-red-50/40 hover:bg-red-50/70'}
-        hover:shadow-sm hover:-translate-y-0.5
+        group flex items-center justify-between p-4 mb-3
+        glass-card hover:-translate-y-1 hover:shadow-lg hover:shadow-white/5
         transition-all duration-200 ease-out
-        border-b border-gray-100 last:border-b-0
         cursor-pointer
         ${isDeleting ? 'opacity-50 pointer-events-none' : ''}
       `}
@@ -90,11 +88,12 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
         {/* Icon with semantic styling */}
         <div
           className={`
-            flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center
+            flex-shrink-0 w-12 h-12 rounded-[1.25rem] flex items-center justify-center
+            bg-white/5 border border-[var(--card-border)]
             transition-transform duration-200 group-hover:scale-105
             ${isIncome
-              ? 'bg-green-100 text-green-700 ring-2 ring-green-200/50'
-              : 'bg-red-100 text-red-700 ring-2 ring-red-200/50'
+              ? 'text-emerald-400 bg-emerald-500/10'
+              : 'text-rose-400 bg-rose-500/10'
             }
           `}
         >
@@ -111,10 +110,9 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
             <p className="font-semibold text-gray-900 truncate">
               {transaction.description || category?.label || 'Uncategorized'}
             </p>
-            {/* Category Badge */}
             <span className={`
-              inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-              border ${getCategoryBadgeStyle(category?.label)}
+              inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold
+              border-2 border-slate-800 dark:border-[1px] ${getCategoryBadgeStyle(category?.label)}
             `}>
               {category?.label || 'Uncategorized'}
             </span>
@@ -136,8 +134,8 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
         {/* Amount with semantic styling */}
         <span
           className={`
-            font-bold text-lg tabular-nums tracking-tight
-            ${isIncome ? 'text-green-700' : 'text-red-700'}
+            font-black text-[1.1rem] tabular-nums tracking-tight
+            ${isIncome ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}
           `}
         >
           {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
