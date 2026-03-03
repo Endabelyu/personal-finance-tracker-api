@@ -1,3 +1,4 @@
+import './tailwind.css';
 import './styles/dark-mode.css';
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 import {
@@ -48,7 +49,7 @@ export function Layout({ children }: { children: ReactNode }) {
         
         {/* Microsoft Windows Meta Tags */}
         <meta name="msapplication-TileColor" content="#3b82f6" />
-        <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+        <meta name="msapplication-TileImage" content="/icons/icon.svg" />
         
         {/* Mobile Optimization */}
         <meta name="mobile-web-app-capable" content="yes" />
@@ -61,27 +62,28 @@ export function Layout({ children }: { children: ReactNode }) {
         {/* Apple Touch Icons */}
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.svg" />
         
+        {/* Google Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet" />
+
         {/* Web App Manifest */}
         <link rel="manifest" href="/manifest.json" />
         
-        {/* Service Worker Registration */}
+        {/* Service Worker Cleanup (Dev) */}
         <script dangerouslySetInnerHTML={{__html: `
           if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-              navigator.serviceWorker.register('/sw.js')
-                .then(registration => {
-                  console.log('[PWA] Service Worker registered:', registration.scope);
-                })
-                .catch(error => {
-                  console.log('[PWA] Service Worker registration failed:', error);
-                });
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              for(let registration of registrations) {
+                registration.unregister();
+              }
             });
           }
         `}} />
         <Meta />
         <Links />
       </head>
-      <body className="min-h-screen bg-gray-50 text-gray-900 antialiased touch-manipulation">
+      <body className="min-h-screen antialiased touch-manipulation">
         {children}
         <ScrollRestoration />
         <Scripts />

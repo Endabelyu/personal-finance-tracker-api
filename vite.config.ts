@@ -27,13 +27,6 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    // Proxy /api/* to the Hono API server running on port 3000
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-    },
   },
   build: {
     target: 'esnext',

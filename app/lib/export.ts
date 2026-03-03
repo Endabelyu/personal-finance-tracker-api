@@ -1,4 +1,4 @@
-import type { Transaction, Category } from '@db/schema';
+import type { Transaction, Category } from '@app/types';
 
 export interface ExportOptions {
   filename?: string;
