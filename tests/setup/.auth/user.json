@@ -2,10 +2,10 @@
   "cookies": [
     {
       "name": "better-auth.session_token",
-      "value": "mKPG5MfCrlZEA2XHUfgZHsY3swNgopKU.Qc%2BZ2mZXLE%2BNC%2FNeMgtZ9ydj3ihqvmE24DylF%2FVwA7A%3D",
+      "value": "JYAKFk7P5uBjFWHyiLAltacXimimSwdp.er%2Fdx%2F0zQKsOSO1FJ31h8Cb2y4twpAqozhphikn%2Fsw4%3D",
       "domain": "localhost",
       "path": "/",
-      "expires": 1773178917.235001,
+      "expires": 1773198442.191788,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"
@@ -17,7 +17,7 @@
       "localStorage": [
         {
           "name": "finance-tracker-walkthrough",
-          "value": "{\"isCompleted\":true,\"isSkipped\":true,\"lastVisit\":\"2026-03-03T21:41:58.869Z\"}"
+          "value": "{\"isCompleted\":true,\"isSkipped\":true,\"lastVisit\":\"2026-03-04T03:07:24.310Z\"}"
         },
         {
           "name": "finance-tracker-theme",

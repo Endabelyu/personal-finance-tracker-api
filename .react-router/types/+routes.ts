@@ -38,6 +38,12 @@ type Pages = {
   "/profile": {
     params: {};
   };
+  "/profile/edit": {
+    params: {};
+  };
+  "/profile/security": {
+    params: {};
+  };
   "/settings": {
     params: {};
   };
@@ -59,7 +65,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/auth/login" | "/auth/register" | "/auth/logout" | "/auth/forgot-password" | "/transactions" | "/budget" | "/reports" | "/profile" | "/settings" | "/walkthrough" | "/api/*" | "/*";
+    page: "/" | "/auth/login" | "/auth/register" | "/auth/logout" | "/auth/forgot-password" | "/transactions" | "/budget" | "/reports" | "/profile" | "/profile/edit" | "/profile/security" | "/settings" | "/walkthrough" | "/api/*" | "/*";
   };
   "routes/auth.login.tsx": {
     id: "routes/auth.login";
@@ -79,7 +85,7 @@ type RouteFiles = {
   };
   "routes/_app.tsx": {
     id: "routes/_app";
-    page: "/" | "/transactions" | "/budget" | "/reports" | "/profile" | "/settings";
+    page: "/" | "/transactions" | "/budget" | "/reports" | "/profile" | "/profile/edit" | "/profile/security" | "/settings";
   };
   "routes/_app.dashboard.tsx": {
     id: "routes/_app.dashboard";
@@ -100,6 +106,14 @@ type RouteFiles = {
   "routes/_app.profile.tsx": {
     id: "routes/_app.profile";
     page: "/profile";
+  };
+  "routes/_app.profile_.edit.tsx": {
+    id: "routes/_app.profile_.edit";
+    page: "/profile/edit";
+  };
+  "routes/_app.profile_.security.tsx": {
+    id: "routes/_app.profile_.security";
+    page: "/profile/security";
   };
   "routes/_app.settings.tsx": {
     id: "routes/_app.settings";
@@ -131,6 +145,8 @@ type RouteModules = {
   "routes/_app.budget": typeof import("./app/routes/_app.budget.tsx");
   "routes/_app.reports": typeof import("./app/routes/_app.reports.tsx");
   "routes/_app.profile": typeof import("./app/routes/_app.profile.tsx");
+  "routes/_app.profile_.edit": typeof import("./app/routes/_app.profile_.edit.tsx");
+  "routes/_app.profile_.security": typeof import("./app/routes/_app.profile_.security.tsx");
   "routes/_app.settings": typeof import("./app/routes/_app.settings.tsx");
   "routes/walkthrough": typeof import("./app/routes/walkthrough.tsx");
   "routes/api.$": typeof import("./app/routes/api.$.tsx");
