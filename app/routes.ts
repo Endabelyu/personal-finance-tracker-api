@@ -14,6 +14,8 @@ export default [
     route("budget", "routes/_app.budget.tsx"),
     route("reports", "routes/_app.reports.tsx"),
     route("profile", "routes/_app.profile.tsx"),
+    route("profile/edit", "routes/_app.profile_.edit.tsx"),
+    route("profile/security", "routes/_app.profile_.security.tsx"),
     route("settings", "routes/_app.settings.tsx"),
   ]),
   route("walkthrough", "routes/walkthrough.tsx"),

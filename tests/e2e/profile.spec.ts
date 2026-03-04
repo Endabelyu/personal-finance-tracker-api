@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
+import * as fs from 'fs';
 
 test.use({ storageState: 'tests/setup/.auth/user.json' });
 
@@ -26,7 +27,7 @@ test.describe('Profile', () => {
     await page.click('button[type="submit"]', { force: true });
 
     // Success: redirected back or shows saved
-    await expect(page.locator('text=Tersimpan!, text=Berhasil').or(page.locator('text=E2E Test Name')).first()).toBeVisible({ timeout: 8_000 });
+    await expect(page.locator('text=Tersimpan!, text=Berhasil').or(page.locator('text=E2E Test Name')).filter({ visible: true }).first()).toBeVisible({ timeout: 8_000 });
   });
 
   test('should navigate to Keamanan (Security) page', async ({ page }) => {
