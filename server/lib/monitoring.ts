@@ -108,10 +108,17 @@ export function getPrometheusMetrics(): string {
  * Usage: app.use('*', monitoringMiddleware);
  */
 export async function monitoringMiddleware(
-  c: { req: { path: string }; res: { status: number } },
+  c: { req: { path: string; header: (name: string) => string | undefined }; res: { status: number; headers: Headers } },
   next: () => Promise<void>
 ) {
   const start = Date.now();
+  
+  // Inject or forward Trace ID
+  const traceId = c.req.header('X-Trace-ID') || `trace-${Math.random().toString(36).substring(2, 10)}-${Date.now()}`;
+  if (c.res && c.res.headers) {
+    c.res.headers.set('X-Trace-ID', traceId);
+  }
+
   try {
     await next();
     const ms = Date.now() - start;
@@ -120,11 +127,12 @@ export async function monitoringMiddleware(
 
     // Log slow requests (> 500ms)
     if (ms > 500) {
-      logger.warn(`Slow Request Detected`, { path: c.req.path, duration_ms: ms });
+      logger.warn(`Slow Request Detected`, { path: c.req.path, duration_ms: ms, traceId });
     }
   } catch (err) {
     const ms = Date.now() - start;
     recordLatency(ms, true);
+    logger.error(`Request Failed`, { path: c.req.path, duration_ms: ms, traceId, error: String(err) });
     throw err;
   }
 }
