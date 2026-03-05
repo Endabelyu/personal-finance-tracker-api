@@ -1,4 +1,4 @@
-export async function sendTelegramAlert(message: string, isError: boolean = false) {
+export async function sendTelegramAlert(message: string, isError: boolean = false, topicId?: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -25,6 +25,7 @@ export async function sendTelegramAlert(message: string, isError: boolean = fals
         text: formattedMessage,
         parse_mode: 'HTML',
         disable_web_page_preview: true,
+        ...(topicId ? { message_thread_id: topicId } : {}),
       }),
     });
 
