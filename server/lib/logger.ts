@@ -1,3 +1,5 @@
+import { sendTelegramAlert } from './telegram';
+
 /**
  * Simple structured JSON logger for improved production observability.
  * Replaces standard console.log with JSON payloads that logging agents can parse.
@@ -10,7 +12,12 @@ export const logger = {
     console.warn(JSON.stringify({ level: 'warn', timestamp: new Date().toISOString(), msg, ...ctx }));
   },
   error: (msg: string, ctx?: Record<string, any>) => {
-    console.error(JSON.stringify({ level: 'error', timestamp: new Date().toISOString(), msg, ...ctx }));
+    const errorBody = JSON.stringify({ level: 'error', timestamp: new Date().toISOString(), msg, ...ctx });
+    console.error(errorBody);
+    
+    // Auto-forward critical SEV-1 errors to Telegram in the background without blocking execution
+    sendTelegramAlert(`🚨 ERROR \n${msg}${ctx ? '\n\nContext:\n' + JSON.stringify(ctx, null, 2) : ''}`, true)
+      .catch(fetchErr => console.warn('Silencing expected telegram failure to prevent log loop', fetchErr));
   },
   debug: (msg: string, ctx?: Record<string, any>) => {
     if (process.env.NODE_ENV !== 'production') {
