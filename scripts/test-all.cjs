@@ -18,10 +18,10 @@ if (!fs.existsSync(resultsDir)) {
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
 const tests = [
-  { name: 'API Tests', script: 'api-test.js', required: true },
-  { name: 'Security Scan', script: 'security-scan.js', required: false },
-  { name: 'Performance Tests', script: 'performance-test.js', required: false },
-  { name: 'Memory Leak Detection', script: 'memory-leak-test.js', required: false },
+  { name: 'API Tests', script: 'api-test.cjs', required: true },
+  { name: 'Security Scan', script: 'security-scan.cjs', required: false },
+  { name: 'Performance Tests', script: 'performance-test.cjs', required: false },
+  { name: 'Memory Leak Detection', script: 'memory-leak-test.cjs', required: false },
 ];
 
 const results = {
