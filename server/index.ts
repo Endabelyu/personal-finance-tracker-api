@@ -1,10 +1,8 @@
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
-import { serveStatic } from '@hono/node-server/serve-static';
 import { logger as honoLogger } from 'hono/logger';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
-import { createRequestHandler } from 'react-router';
 
 import apiRoutes from './routes';
 import { monitoringMiddleware, getMetrics, getPrometheusMetrics, logMetricsSnapshot } from './lib/monitoring';
@@ -16,25 +14,35 @@ const app = new Hono();
 app.use(honoLogger());
 app.use('*', monitoringMiddleware as any);
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? [process.env.BETTER_AUTH_URL || 'https://personal-finance-tracker.endabelyu.com']
-    : ['http://localhost:5173', 'http://localhost:3000'],
+  origin: (origin) => {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || 'http://localhost:5173',
+      'http://localhost:5173',
+      'http://localhost:3000',
+    ];
+    if (!origin || allowedOrigins.some(o => origin.startsWith(o))) return origin || '*';
+    return null;
+  },
   credentials: true,
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Trace-ID'],
+  exposeHeaders: ['X-Trace-ID'],
 }));
 app.use(secureHeaders());
 
-// Error handlers at the very top to catch any synchronous module loading errors
+// Error handlers
 process.on('uncaughtException', (err) => {
-  appLogger.error('Uncaught Exception', { error: err.message, stack: err.stack });
+  appLogger.error('[Uncaught Exception]', { error: err.message, stack: err.stack });
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  appLogger.error('Unhandled Rejection', { reason: String(reason) });
+process.on('unhandledRejection', (reason) => {
+  appLogger.error('[Unhandled Rejection]', { reason: String(reason) });
 });
 
 // Health check endpoint
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
+app.get('/livez', (c) => c.json({ status: 'ok' }));
+app.get('/readyz', (c) => c.json({ status: 'ok' }));
 
 // Metrics endpoint — Prometheus format (or JSON if requested)
 app.get('/metrics', (c) => {
@@ -48,73 +56,13 @@ app.get('/metrics', (c) => {
 // API routes
 app.route('/api', apiRoutes);
 
-// Serve hashed assets (React Router build output) - immutable, 1 year cache
-app.use(
-  '/assets/*',
-  serveStatic({
-    root: './build/client',
-    onFound: (_path, c) => {
-      c.res.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-    },
-  })
-);
-
-// Serve other static files (favicon, manifest, robots, sw.js, etc.) - 1 hour cache
-app.use(
-  '*',
-  serveStatic({
-    root: './build/client',
-    onFound: (_path, c) => {
-      c.res.headers.set('Cache-Control', 'public, max-age=3600');
-    },
-  })
-);
-
-// Initialize React Router SSR handler once at startup
-// When compiled to build/custom-server/index.js, '../server/index.js' resolves to build/server/index.js
-const isCompiledServer = import.meta.url.includes('custom-server');
-const buildPath = isCompiledServer ? '../server/index.js' : '../build/server/index.js';
-
-let rrHandler: ((request: Request) => Promise<Response>) | null = null;
-
-async function getSSRHandler() {
-  if (rrHandler) return rrHandler;
-
-  const build = await import(/* @vite-ignore */ buildPath).catch((e: Error) => {
-    appLogger.error('Failed to load React Router build', { error: e.message });
-    return null;
-  }) as any;
-
-  if (!build) {
-    appLogger.error('Build not found or could not be loaded');
-    return null;
-  }
-
-  appLogger.info('React Router build loaded', { exports: Object.keys(build).length });
-
-  rrHandler = createRequestHandler(
-    build,
-    process.env.NODE_ENV as 'development' | 'production',
-  );
-
-  return rrHandler;
-}
-
-// React Router handler (catch-all for SSR)
-app.all('*', async (c) => {
-  try {
-    const handler = await getSSRHandler();
-
-    if (!handler) {
-      return c.json({ error: 'Build not found — run npm run build first' }, 500);
-    }
-
-    return handler(c.req.raw);
-  } catch (error) {
-    appLogger.error('SSR Error', { error: String(error) });
-    return c.json({ error: 'SSR failed', details: String(error) }, 500);
-  }
-});
+// Root — API info
+app.get('/', (c) => c.json({
+  name: 'Personal Finance Tracker API',
+  version: '1.0.0',
+  docs: '/api/health',
+  metrics: '/metrics',
+}));
 
 // Error handler
 app.onError((err, c) => {
@@ -129,11 +77,10 @@ app.notFound((c) => c.json({ error: 'Not Found' }, 404));
 const port = parseInt(process.env.PORT || '3005');
 appLogger.info('Server starting', { port, cwd: process.cwd(), env: process.env.NODE_ENV });
 
-const server = serve({
+serve({
   fetch: app.fetch,
   port,
 }, (info: { port: number }) => {
   appLogger.info('Server running', { url: `http://localhost:${info.port}` });
-  // Log p99/memory metrics every 5 minutes
   setInterval(logMetricsSnapshot, 5 * 60 * 1000).unref();
 });
