@@ -72,7 +72,25 @@ app.get('/', (c) => c.json({
 }));
 
 // Serve OpenAPI spec
-app.get('/openapi.json', (c) => c.json(openApiSpec));
+app.get('/openapi.json', (c) => {
+  const url = new URL(c.req.url);
+  const protocol = c.req.header('x-forwarded-proto') || url.protocol.replace(':', '');
+  const host = c.req.header('x-forwarded-host') || c.req.header('host') || url.host;
+
+  return c.json({
+    ...openApiSpec,
+    servers: [
+      {
+        url: `${protocol}://${host}`,
+        description: 'Current Environment'
+      },
+      {
+        url: '/',
+        description: 'Relative (Fallback)'
+      }
+    ]
+  });
+});
 
 // Swagger UI dashboard
 app.get('/docs', swaggerUI({ url: '/openapi.json' }));
