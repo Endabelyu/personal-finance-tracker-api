@@ -2,7 +2,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { eq, and, sql, desc, SQL } from 'drizzle-orm';
+import { eq, and, gte, sql, desc, SQL } from 'drizzle-orm';
 import { db } from '@server/lib/db';
 import { transactions, categories } from '@db/schema';
 import { requireAuth } from '@server/lib/auth';
@@ -167,7 +167,7 @@ app.get('/monthly', zValidator('query', monthsQuerySchema), async (c) => {
     .where(
       and(
         baseCondition,
-        sql`${transactions.date} >= ${monthsList[0]}-01`
+        gte(transactions.date, new Date(monthsList[0] + '-01'))
       )
     )
     .groupBy(sql`to_char(${transactions.date}, 'YYYY-MM')`, transactions.type)
