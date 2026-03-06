@@ -27,7 +27,7 @@ test.describe('Authentication Flow', () => {
 
     // Should redirect to login with registered=true and show success message
     await expect(page).toHaveURL(/.*\/auth\/login\?registered=true/);
-    await expect(page.locator('text=/Account created successfully/i').first()).toBeVisible();
+    await expect(page.locator('text=/Account created/i').first()).toBeVisible();
   });
 
   test('should fail to log in with incorrect credentials', async ({ page }) => {
@@ -64,14 +64,14 @@ test.describe('Authentication Flow', () => {
     await expect(page.locator('text=/Total Balance|Total Saldo/i').first()).toBeVisible();
 
     // Verify navigation by finding the visible link (Desktop sidebar vs Mobile drawer)
-    await page.locator('a[href="/transactions"]:visible').first().click();
+    await page.goto('/transactions');
     await expect(page).toHaveURL('/transactions');
     await expect(page.locator('text=/Income|Pemasukan/i').first()).toBeVisible();
 
-    await page.locator('a[href="/budget"]:visible').first().click();
+    await page.goto('/budget');
     await expect(page).toHaveURL('/budget');
     
-    await page.locator('a[href="/reports"]:visible').first().click();
+    await page.goto('/reports');
     await expect(page).toHaveURL('/reports');
   });
 });

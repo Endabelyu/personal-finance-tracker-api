@@ -11,10 +11,10 @@ test.describe('Transactions', () => {
   });
 
   test('should add an income transaction', async ({ page }) => {
-    // Navigate to open the modal
-    await page.goto('/transactions?new=true');
+    // Click the Add Transaction button to open the modal
+    await page.locator('button:has-text("Add Transaction"), button:has-text("Tambah Transaksi")').first().click();
 
-    // Wait for modal
+    // Wait for the modal label or modal content
     await expect(page.locator('text=/Add Transaction|Tambah Transaksi/i').first()).toBeVisible({ timeout: 5000 });
 
     // Select Income type
@@ -45,9 +45,8 @@ test.describe('Transactions', () => {
   });
 
   test('should add an expense transaction', async ({ page }) => {
-    // Open add modal
-    // Navigate to open the modal
-    await page.goto('/transactions?new=true');
+    // Open add modal by clicking the button
+    await page.locator('button:has-text("Add Transaction"), button:has-text("Tambah Transaksi")').first().click();
 
     await expect(page.locator('text=/Add Transaction|Tambah Transaksi/i').first()).toBeVisible({ timeout: 5_000 });
 
