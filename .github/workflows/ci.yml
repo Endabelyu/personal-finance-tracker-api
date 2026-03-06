@@ -98,6 +98,6 @@ jobs:
           script: |
             cd ${{ secrets.VPS_TARGET_DIR }}
             sudo chown deploy:deploy .env
-            docker compose up -d --build --force-recreate app
+            docker compose up -d --build --force-recreate --no-deps app
             docker compose exec -T app npm run db:push || true
             docker image prune -f

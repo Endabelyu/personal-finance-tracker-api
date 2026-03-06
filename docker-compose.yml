@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: finance-tracker
+    container_name: finance-tracker-api
     ports:
       - "4006:4006"
     environment:
