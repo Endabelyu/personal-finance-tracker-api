@@ -65,7 +65,6 @@ app.route('/api', apiRoutes);
 app.get('/', (c) => c.json({
   name: 'Personal Finance Tracker API',
   version: '1.0.0',
-  docs: '/api/health',
   metrics: '/metrics',
 }));
 
