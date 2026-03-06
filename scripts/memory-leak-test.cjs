@@ -8,7 +8,7 @@ const autocannon = require('autocannon');
 const fs = require('fs');
 const path = require('path');
 
-const BASE_URL = process.env.TEST_URL || 'http://localhost:3005';
+const BASE_URL = process.env.TEST_URL || 'http://localhost:3000';
 const RESULTS_DIR = path.join(__dirname, '..', 'test-results');
 
 if (!fs.existsSync(RESULTS_DIR)) {

@@ -6,8 +6,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "react-router dev",
-    "build": "react-router typegen && react-router build && npm run build:server",
+    "dev": "tsx watch server/index.ts",
+    "build": "npm run build:server",
     "build:server": "esbuild server/index.ts --bundle --platform=node --format=esm --packages=external --outdir=build/custom-server",
     "start": "node ./build/custom-server/index.js",
     "type-check": "tsc --noEmit",
