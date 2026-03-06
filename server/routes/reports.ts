@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/triple-slash-reference */
 /// <reference path="../types/hono.d.ts" />
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';

@@ -1,10 +1,8 @@
 import js from '@eslint/js';
-import * as tsParser from '@typescript-eslint/parser';
+import tseslint from 'typescript-eslint';
 import globals from 'globals';
 
-/** @type {import('eslint').Linter.FlatConfig[]} */
-export default [
-  // Ignore patterns
+export default tseslint.config(
   {
     ignores: [
       'build/**',
@@ -15,19 +13,14 @@ export default [
       'cli/templates/**',
       '*.config.js',
       '*.config.ts',
-      'scripts/**/*.cjs',
+      'scripts/**',
     ],
   },
-
-  // Base config for all JS/TS files
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
     files: ['**/*.{js,ts}'],
     languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
       globals: {
         ...globals.node,
         RequestInit: 'readonly',
@@ -35,16 +28,12 @@ export default [
       },
     },
     rules: {
-      ...js.configs.recommended.rules,
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
       'no-var': 'error',
       'eqeqeq': ['error', 'smart'],
-      'no-undef': 'off', // TS handles undef
-      'no-redeclare': 'warn',
     },
   },
-
-  // k6 test files
   {
     files: ['tests/load/**/*.js'],
     languageOptions: {
@@ -53,10 +42,8 @@ export default [
       },
     },
   },
-
-  // Test files
   {
-    files: ['**/*.test.ts', '**/*.spec.ts', 'vitest.setup.ts', 'server/lib/test-utils.ts', 'tests/setup/**/*.ts'],
+    files: ['**/*.test.ts', '**/*.spec.ts', 'vitest.setup.ts', 'server/lib/test-utils.server.ts', 'tests/setup/**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.vitest,
@@ -71,18 +58,11 @@ export default [
       },
     },
   },
-
-  // CLI files
   {
     files: ['cli/**/*.{js,ts}'],
-    languageOptions: {
-      globals: {
-        ...globals.node,
-      },
-    },
     rules: {
       'no-console': 'off',
     },
-  },
-];
+  }
+);
 
