@@ -12,7 +12,7 @@ const app = new Hono();
 
 // List schema for query params
 const listQuerySchema = z.object({
-  month: z.string().regex(/^\d{4}-\d{2}$/), // YYYY-MM format
+  month: z.string().regex(/^\d{4}-\d{2}$/).optional(), // YYYY-MM format, optionally provided
 });
 
 // Upsert budget schema
@@ -44,7 +44,8 @@ app.use('DELETE /*', writeLimiter);
 // GET /api/budgets?month=YYYY-MM - List budgets for month with spending calculation
 app.get('/', zValidator('query', listQuerySchema), async (c) => {
   const user = c.get('user') as { id: string };
-  const { month } = c.req.valid('query');
+  const { month: validMonth } = c.req.valid('query');
+  const month = validMonth || new Date().toISOString().slice(0, 7); // Default to current YYYY-MM
 
   // Get budgets for the user and month
   const userBudgets = await db.query.budgets.findMany({

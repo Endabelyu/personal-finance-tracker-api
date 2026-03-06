@@ -3,6 +3,7 @@
  * Clears all transactions and budgets for the E2E test user before each run.
  * Categories and user account are left intact.
  */
+import 'dotenv/config';
 import { db, client } from '../../server/lib/db';
 import { transactions, budgets, users, session as sessionTable } from '../../db/schema';
 import { eq } from 'drizzle-orm';
