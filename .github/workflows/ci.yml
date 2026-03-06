@@ -51,11 +51,6 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/financetracker_test
-      BETTER_AUTH_SECRET: test-secret-for-ci-only-not-for-production
-      BETTER_AUTH_URL: http://localhost:3000
-      NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -64,8 +59,15 @@ jobs:
           cache: 'npm'
       - run: npm ci --legacy-peer-deps
       - name: Setup database
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/financetracker_test
         run: npm run db:push
       - name: Run tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/financetracker_test
+          BETTER_AUTH_SECRET: test-secret-for-ci-only-not-for-production
+          BETTER_AUTH_URL: http://localhost:3000
+          NODE_ENV: test
         run: npm test
 
   deploy-production:
