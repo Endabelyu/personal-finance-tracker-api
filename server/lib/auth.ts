@@ -16,7 +16,7 @@ export const auth = betterAuth({
   }),
   baseURL: process.env.NODE_ENV === 'production' 
     ? process.env.BETTER_AUTH_URL 
-    : 'http://localhost:5173',
+    : 'http://localhost:3005/api/auth',
   emailAndPassword: {
     enabled: true,
   },
