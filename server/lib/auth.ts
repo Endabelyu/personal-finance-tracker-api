@@ -23,6 +23,10 @@ export const auth = betterAuth({
   trustedOrigins: [
     'https://personal-finance-tracker.endabelyu.com',
     'http://personal-finance-tracker.endabelyu.com',
+    'https://finance-web.endabelyu.com',
+    'https://finance-api.endabelyu.com',
+    'http://finance-web.endabelyu.com',
+    'http://finance-api.endabelyu.com',
     'http://localhost:3005',
     'http://localhost:3002',
     'http://localhost:5174',
