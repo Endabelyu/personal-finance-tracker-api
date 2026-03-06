@@ -1,0 +1,106 @@
+groups:
+  - name: finance_tracker_sla
+    interval: 1m
+    rules:
+
+      # ── Availability ──────────────────────────────────────────────
+      - alert: HighErrorRate
+        expr: |
+          (rate(http_errors_total[5m]) / rate(http_requests_total[5m])) * 100 > 1
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High HTTP error rate ({{ $value | printf \"%.2f\" }}%)"
+          description: "Error rate has been above 1% for 2 minutes. SLA threshold is 0.1%."
+          runbook: "Check server logs at /logs and recent deployments."
+
+      - alert: CriticalErrorRate
+        expr: |
+          (rate(http_errors_total[5m]) / rate(http_requests_total[5m])) * 100 > 5
+        for: 1m
+        labels:
+          severity: page   # triggers PagerDuty / Telegram
+          team: backend
+        annotations:
+          summary: "CRITICAL: Error rate >5% ({{ $value | printf \"%.2f\" }}%)"
+          description: "SEV-1: Error rate critically high. Immediate action required."
+          runbook: "Escalate immediately. Check if a bad deploy needs rollback: bash deploy.sh stop && bash deploy.sh app"
+
+      # ── Latency ───────────────────────────────────────────────────
+      - alert: HighP99Latency
+        expr: http_request_duration_milliseconds_p99 > 1000
+        for: 3m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "p99 latency > 1000ms (current: {{ $value }}ms)"
+          description: "API p99 response time exceeds SLA minimum of 1000ms alert threshold."
+          runbook: "Check for slow DB queries in logs. Review recent code changes."
+
+      - alert: CriticalP99Latency
+        expr: http_request_duration_milliseconds_p99 > 2000
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "CRITICAL: p99 latency > 2000ms ({{ $value }}ms)"
+          description: "SEV-2: API p99 response time far exceeds SLA critical threshold."
+
+      - alert: HighP50Latency
+        expr: http_request_duration_milliseconds_p50 > 200
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "p50 latency > 200ms (current: {{ $value }}ms)"
+          description: "Median response time is degraded. SLA target is <100ms."
+
+      # ── Memory ────────────────────────────────────────────────────
+      - alert: HighHeapUsage
+        expr: nodejs_memory_heap_used_bytes / nodejs_memory_heap_total_bytes * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Node.js heap usage > 80% ({{ $value | printf \"%.1f\" }}%)"
+          description: "Heap is approaching exhaustion. Possible memory leak."
+          runbook: "Check for memory leaks. Consider restarting the service if > 90%."
+
+      - alert: CriticalHeapUsage
+        expr: nodejs_memory_heap_used_bytes / nodejs_memory_heap_total_bytes * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "CRITICAL: Node.js heap usage > 90% ({{ $value | printf \"%.1f\" }}%)"
+          description: "SEV-2: Imminent OOM. Restart required."
+
+      # ── Uptime / Availability ─────────────────────────────────────
+      - alert: ServiceDown
+        expr: up{job="finance-tracker-app"} == 0
+        for: 1m
+        labels:
+          severity: page
+          team: backend
+        annotations:
+          summary: "Finance Tracker API is DOWN"
+          description: "SEV-1: The finance-tracker-app target is not reachable by Prometheus."
+          runbook: "Run: bash deploy.sh status — then bring up if needed: bash deploy.sh app"
+
+      # ── Traffic Anomaly ───────────────────────────────────────────
+      - alert: TrafficSpike
+        expr: rate(http_requests_total[2m]) > 50
+        for: 2m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Unusual traffic spike: {{ $value | printf \"%.1f\" }} req/s"
+          description: "Request rate is above 50 req/s. Possible DDoS or viral event."

@@ -1,3 +1,7 @@
+import { initSentry, sentryMiddleware } from './lib/sentry';
+// Sentry must be initialised before any other imports that might throw
+initSentry();
+
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
 import { logger as honoLogger } from 'hono/logger';
@@ -13,6 +17,7 @@ const app = new Hono();
 // Middleware
 app.use(honoLogger());
 app.use('*', monitoringMiddleware as any);
+app.use('*', sentryMiddleware as any);
 app.use(cors({
   origin: (origin) => {
     const allowedOrigins = [
