@@ -14,8 +14,7 @@ import { monitoringMiddleware, getMetrics, getPrometheusMetrics, logMetricsSnaps
 import { logger as appLogger } from './lib/logger';
 import { swaggerUI } from '@hono/swagger-ui';
 import { openApiSpec } from './openapi';
-import { db } from './lib/db';
-import { sql } from 'drizzle-orm';
+import { db, pingDb } from './lib/db';
 
 const app = new Hono();
 
@@ -53,26 +52,21 @@ process.on('unhandledRejection', (reason) => {
   appLogger.error('[Unhandled Rejection]', { reason: String(reason) });
 });
 
-// Health check — pings DB to verify full readiness
+// Health check — pings DB to verify full readiness (fast timeout: 3s)
 app.get('/health', async (c) => {
-  try {
-    await db.execute(sql`SELECT 1`);
+  const dbOk = await pingDb();
+  if (dbOk) {
     return c.json({ status: 'ok', db: 'connected', timestamp: new Date().toISOString() });
-  } catch (err) {
-    appLogger.error('Health check DB ping failed', { error: String(err) });
-    return c.json({ status: 'degraded', db: 'unreachable', timestamp: new Date().toISOString() }, 503);
   }
+  appLogger.error('Health check DB ping failed');
+  return c.json({ status: 'degraded', db: 'unreachable', timestamp: new Date().toISOString() }, 503);
 });
 // Liveness probe — no DB check (just confirms process is alive)
 app.get('/livez', (c) => c.json({ status: 'ok' }));
 // Readiness probe — confirms DB is reachable before accepting traffic
 app.get('/readyz', async (c) => {
-  try {
-    await db.execute(sql`SELECT 1`);
-    return c.json({ status: 'ok' });
-  } catch {
-    return c.json({ status: 'not ready' }, 503);
-  }
+  const dbOk = await pingDb();
+  return dbOk ? c.json({ status: 'ok' }) : c.json({ status: 'not ready' }, 503);
 });
 
 // Metrics endpoint — Prometheus format (or JSON if requested)

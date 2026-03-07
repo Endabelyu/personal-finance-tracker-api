@@ -44,6 +44,25 @@ const queryLogger = {
 export const client = postgres(connectionString, {
   // Log connection errors
   onnotice: (notice) => logger.warn('Postgres notice', { notice: notice.message }),
+  connect_timeout: 5, // seconds — prevent long hangs on DB unreachable
+  max: 10,            // connection pool size
+  idle_timeout: 30,   // seconds — close idle connections
 });
 
 export const db = drizzle(client, { schema, logger: queryLogger });
+
+// Lightweight client for health checks — fails fast (3s timeout)
+export const healthCheckClient = postgres(connectionString, {
+  max: 1,
+  connect_timeout: 3,
+  fetch_types: false,
+});
+
+export async function pingDb(): Promise<boolean> {
+  try {
+    await healthCheckClient`SELECT 1`;
+    return true;
+  } catch {
+    return false;
+  }
+}
