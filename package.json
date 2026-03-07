@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch server/index.ts --port=3005",
+    "dev": "PORT=3005 tsx watch server/index.ts",
     "build": "npm run build:server",
     "build:server": "esbuild server/index.ts --bundle --platform=node --format=esm --packages=external --outdir=build/custom-server",
     "start": "node ./build/custom-server/index.js",

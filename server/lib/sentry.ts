@@ -8,7 +8,10 @@ import * as Sentry from '@sentry/node';
 export function initSentry() {
   const dsn = process.env.SENTRY_DSN;
   if (!dsn) {
-    console.warn('[Sentry] SENTRY_DSN not set — error tracking disabled.');
+    // Only warn in production — it's expected to be unset in local dev
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('[Sentry] SENTRY_DSN not set — error tracking disabled.');
+    }
     return;
   }
 

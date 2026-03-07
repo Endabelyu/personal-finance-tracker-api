@@ -235,8 +235,25 @@ app.get('/', (c) => {
   `);
 });
 
-// Serve OpenAPI spec — use relative URL so Swagger UI inherits the current protocol/host
-app.get('/openapi.json', (c) => c.json(openApiSpec));
+// Serve OpenAPI spec — dynamically inject the current server URL
+app.get('/openapi.json', (c) => {
+  const url = new URL(c.req.url);
+  // x-forwarded-proto is set by the reverse proxy in production.
+  // Fall back to 'https' in production and 'http' in development.
+  const defaultProtocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  const protocol = c.req.header('x-forwarded-proto') || defaultProtocol;
+  const host = c.req.header('x-forwarded-host') || c.req.header('host') || url.host;
+
+  return c.json({
+    ...openApiSpec,
+    servers: [
+      {
+        url: `${protocol}://${host}`,
+        description: process.env.NODE_ENV === 'production' ? 'Production' : 'Local Dev'
+      }
+    ]
+  });
+});
 
 // Swagger UI dashboard
 app.get('/docs', swaggerUI({ url: '/openapi.json' }));
