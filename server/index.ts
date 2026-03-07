@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { initSentry, sentryMiddleware } from './lib/sentry';
 // Sentry must be initialised before any other imports that might throw
 initSentry();
@@ -234,26 +235,8 @@ app.get('/', (c) => {
   `);
 });
 
-// Serve OpenAPI spec
-app.get('/openapi.json', (c) => {
-  const url = new URL(c.req.url);
-  const protocol = c.req.header('x-forwarded-proto') || url.protocol.replace(':', '');
-  const host = c.req.header('x-forwarded-host') || c.req.header('host') || url.host;
-
-  return c.json({
-    ...openApiSpec,
-    servers: [
-      {
-        url: `${protocol}://${host}`,
-        description: 'Current Environment'
-      },
-      {
-        url: '/',
-        description: 'Relative (Fallback)'
-      }
-    ]
-  });
-});
+// Serve OpenAPI spec — use relative URL so Swagger UI inherits the current protocol/host
+app.get('/openapi.json', (c) => c.json(openApiSpec));
 
 // Swagger UI dashboard
 app.get('/docs', swaggerUI({ url: '/openapi.json' }));
