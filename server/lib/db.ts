@@ -10,6 +10,15 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is not set');
 }
 
+// Diagnostic: Log connection info (masked) to verify production environment resolution
+try {
+  const url = new URL(connectionString);
+  logger.info(`DB Init: host=${url.hostname}, port=${url.port || '5432'}, db=${url.pathname.slice(1)}`);
+} catch {
+  // If not a valid URL (e.g. shorthand), just confirm we have a string
+  logger.info('DB Init: connection string format is custom/invalid URL');
+}
+
 // Thresholds (ms) — align with Production Monitoring Guide §2.4
 const SLOW_QUERY_WARN_MS = 100;
 const SLOW_QUERY_ERROR_MS = 1000;
@@ -62,7 +71,12 @@ export async function pingDb(): Promise<boolean> {
   try {
     await healthCheckClient`SELECT 1`;
     return true;
-  } catch {
+  } catch (err) {
+    logger.error('Database Ping Failed', { 
+      error: err instanceof Error ? err.message : String(err),
+      code: (err as any).code,
+      hostname: (err as any).hostname
+    });
     return false;
   }
 }
