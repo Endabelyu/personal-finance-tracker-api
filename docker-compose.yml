@@ -11,7 +11,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=4006
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@finance-tracker:5432/${DB_NAME}
+      - DATABASE_URL=${DATABASE_URL}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
       - FRONTEND_URL=${FRONTEND_URL}
