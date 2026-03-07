@@ -6,7 +6,8 @@ import { z } from 'zod';
 import { eq, and, gte, sql, desc, SQL } from 'drizzle-orm';
 import { db } from '@server/lib/db';
 import { transactions, categories } from '@db/schema';
-import { requireAuth } from '@server/lib/auth';
+import { requireAuth } from '@server/lib/auth-middleware.server';
+import { readLimiter } from '@server/lib/rate-limit';
 
 const app = new Hono();
 
@@ -19,8 +20,9 @@ const monthsQuerySchema = z.object({
   months: z.string().transform(Number).default('6'),
 });
 
-// Apply auth middleware to all routes
+// Apply auth + rate limiting to all routes
 app.use('*', requireAuth);
+app.use('*', readLimiter);
 
 // GET /api/reports/summary?month=YYYY-MM - Financial summary
 app.get('/summary', zValidator('query', monthQuerySchema), async (c) => {

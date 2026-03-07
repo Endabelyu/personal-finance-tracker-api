@@ -4,6 +4,7 @@
  */
 
 import { logger } from './logger';
+import { setSentryTraceContext } from './sentry';
 
 interface LatencyBucket {
   p50: number;
@@ -108,22 +109,24 @@ export function getPrometheusMetrics(): string {
  * Usage: app.use('*', monitoringMiddleware);
  */
 export async function monitoringMiddleware(
-  c: { req: { path: string; header: (name: string) => string | undefined }; res: { status: number; headers: Headers } },
+  c: { req: { path: string; header: (name: string) => string | undefined }; res: { status: number; headers: Headers }; header: (name: string, value: string) => void },
   next: () => Promise<void>
 ) {
   const start = Date.now();
   
   // Inject or forward Trace ID
   const traceId = c.req.header('X-Trace-ID') || `trace-${Math.random().toString(36).substring(2, 10)}-${Date.now()}`;
-  if (c.res && c.res.headers) {
-    c.res.headers.set('X-Trace-ID', traceId);
-  }
+  // Tag Sentry scope with traceId for log-to-Sentry correlation
+  setSentryTraceContext(traceId);
 
   try {
     await next();
     const ms = Date.now() - start;
     const isError = (c.res?.status ?? 200) >= 500;
     recordLatency(ms, isError);
+
+    // Set Trace ID on the response (must happen after next() so response exists)
+    c.header('X-Trace-ID', traceId);
 
     // Log slow requests (> 500ms)
     if (ms > 500) {
@@ -132,6 +135,7 @@ export async function monitoringMiddleware(
   } catch (err) {
     const ms = Date.now() - start;
     recordLatency(ms, true);
+    c.header('X-Trace-ID', traceId);
     logger.error(`Request Failed`, { path: c.req.path, duration_ms: ms, traceId, error: String(err) });
     throw err;
   }

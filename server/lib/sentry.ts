@@ -52,6 +52,16 @@ export function captureError(err: unknown, context?: Record<string, unknown>) {
 }
 
 /**
+ * Set the current request's traceId in the Sentry scope so that
+ * any errors captured during that request can be correlated with logs.
+ * Call this from monitoring middleware after generating the traceId.
+ */
+export function setSentryTraceContext(traceId: string) {
+  Sentry.getCurrentScope().setTag('trace_id', traceId);
+  Sentry.addBreadcrumb({ message: `Trace: ${traceId}`, level: 'info' });
+}
+
+/**
  * Hono middleware that captures unhandled 5xx errors in Sentry.
  */
 export async function sentryMiddleware(

@@ -1,16 +1,21 @@
 import { Hono } from 'hono';
-import { requireAuth } from '@server/lib/auth';
+import { requireAuth } from '@server/lib/auth-middleware.server';
+import { readLimiter } from '@server/lib/rate-limit';
 import { db } from '@server/lib/db';
 import { transactions, categories } from '@db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 const app = new Hono();
+
+app.use('*', requireAuth);
+app.use('*', readLimiter);
 
 /**
  * GET /api/export/transactions
  * Returns all user transactions as a downloadable CSV file.
+ * Row cap: 10,000 to prevent unbounded queries on large accounts.
  */
-app.get('/transactions', requireAuth, async (c) => {
+app.get('/transactions', async (c) => {
   const user = c.get('user') as { id: string; name?: string };
 
   const rows = await db
@@ -24,7 +29,8 @@ app.get('/transactions', requireAuth, async (c) => {
     .from(transactions)
     .leftJoin(categories, eq(transactions.categoryId, categories.id))
     .where(eq(transactions.userId, user.id))
-    .orderBy(desc(transactions.date));
+    .orderBy(desc(transactions.date))
+    .limit(10000); // safety cap — prevents unbounded queries
 
   // Build CSV
   const header = 'Date,Type,Category,Description,Amount';

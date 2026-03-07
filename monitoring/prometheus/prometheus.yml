@@ -8,7 +8,7 @@ rule_files:
 scrape_configs:
   - job_name: "finance-tracker-app"
     static_configs:
-      - targets: ["finance-tracker:3005"]
+      - targets: ["finance-tracker-api:4006"]
     metrics_path: /metrics
 
   - job_name: "prometheus"

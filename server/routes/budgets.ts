@@ -6,7 +6,8 @@ import { z } from 'zod';
 import { eq, and, sql, sum } from 'drizzle-orm';
 import { db } from '@server/lib/db';
 import { budgets, transactions, categories } from '@db/schema';
-import { requireAuth } from '@server/lib/auth';
+import { requireAuth } from '@server/lib/auth-middleware.server';
+
 import { writeLimiter, readLimiter } from '@server/lib/rate-limit';
 
 const app = new Hono();
