@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "PORT=3005 tsx watch server/index.ts",
+    "dev": "cross-env PORT=3005 tsx watch server/index.ts",
     "build": "npm run build:server",
     "build:server": "esbuild server/index.ts --bundle --platform=node --format=esm --packages=external --outdir=build/custom-server",
     "start": "node ./build/custom-server/index.js",
@@ -45,6 +45,7 @@
     "@vitest/coverage-v8": "^4.0.18",
     "autocannon": "^8.0.0",
     "clinic": "^13.0.0",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.3.1",
     "drizzle-kit": "^0.31.4",
     "eslint": "^9.0.0",
